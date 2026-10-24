@@ -13,3 +13,10 @@
 .rewards-card strong{color:#FFFFFF}
 .features article:first-child{border-top:3px solid var(--brand-red)}
 .logo-icon{display:flex;align-items:center;justify-content:center}.logo-c,.logo-i{font-family:Georgia,serif;font-size:22px}
+
+/* Actual property image previews: third-party photo URLs pending original licensed media */
+.photo-hero{background-repeat:no-repeat;background-size:cover;background-position:center 45%}
+.room-art{background:#D7E7F7;overflow:hidden}
+.room-art img{width:100%;height:100%;object-fit:cover;display:block}
+.room-art small{background:#123E72;color:white;padding:7px 10px;border-radius:2px}
+@media(max-width:600px){.photo-hero{background-position:57% center}}
