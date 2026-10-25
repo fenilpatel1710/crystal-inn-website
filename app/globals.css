@@ -33,3 +33,54 @@
 .room-art small{background:#040AFF}
 .metrics strong{color:#040AFF}
 footer{background:#040AFF}
+
+/* Hospitality redesign v2: calm blue UI; supplied logo retains its original vivid blue/red. */
+:root{--ink:#142B4B;--blue:#173F70;--gold:#173F70;--cream:#F0F5FB;--brand-blue:#173F70;--brand-red:#F50012;--brand-white:#FFFFFF;--brand-light-blue:#F0F5FB}
+body{color:var(--ink)}
+header{border-bottom:1px solid #D7E2F0}
+.logo,.nav nav button{color:#173F70}
+.official-logo{filter:none}
+.hero.photo-hero{background-position:center;background-size:cover}
+.primary,.dark{background:#173F70;color:#FFF;border-radius:9px;box-shadow:0 3px 7px rgba(20,43,75,.10);transition:background .2s ease,transform .2s ease}
+.primary:hover,.dark:hover{background:#102E52;transform:translateY(-1px)}
+.nav nav button:last-child{border-color:#173F70;border-radius:9px}
+.nav nav button.active{color:#173F70;box-shadow:inset 0 -2px 0 #F50012}
+.booking{background:#FFF;border:1px solid #DAE5F0;border-radius:18px;box-shadow:0 16px 44px rgba(20,43,75,.12);padding:28px 32px 32px}
+.booking-heading{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.booking-heading h2{margin:0}
+.booking-kicker{font-size:11px;letter-spacing:2px;font-weight:800;color:#476584;margin:0 0 6px}
+.desk-symbol{display:flex;align-items:center;justify-content:center;border-radius:12px;background:#EEF4FA;color:#173F70;font:34px Georgia,serif;width:57px;height:57px;flex-shrink:0;border:1px solid #D8E5F3}
+.booking-grid label{color:#284766;letter-spacing:.3px}
+.booking-grid input,.booking-grid select,.login input{background:#F8FBFF;border:1px solid #C7D8E9;border-radius:10px;min-height:50px;color:#142B4B}
+.features article{border-radius:15px;background:#FFF;box-shadow:0 5px 20px rgba(20,43,75,.045);border-color:#DCE7F3;transition:transform .2s ease}
+.features article:hover,.room:hover{transform:translateY(-3px)}
+.features article:first-child{border-top:1px solid #DCE7F3}
+.hotel-pictogram{display:flex;width:54px;height:54px;align-items:center;justify-content:center;background:#EBF2F9;border:1px solid #D5E3F2;border-radius:14px;color:#173F70!important;font-size:27px!important}
+.features p,.room p,.intro,.panel p{color:#45617C}
+.highlight{background:#F0F5FB}
+.rewards-card{position:relative;overflow:hidden;min-height:275px;background:linear-gradient(125deg,#173F70,#254F7D);border-radius:18px;box-shadow:0 14px 30px rgba(23,63,112,.19);padding:30px 34px}
+.rewards-card::after{content:"";position:absolute;width:230px;height:230px;border:1px solid rgba(255,255,255,.15);border-radius:50%;right:-70px;top:45px;box-shadow:0 0 0 32px rgba(255,255,255,.04),0 0 0 65px rgba(255,255,255,.035)}
+.member-card-top{display:flex;align-items:center;gap:13px;position:relative;z-index:1}
+.member-card-top img{background:white;border-radius:8px;padding:4px}
+.member-card-top small{line-height:1.65;font-size:10px;font-weight:700}
+.card-chip{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;width:48px;height:35px;background:#B3C7DC;border-radius:7px;padding:7px;margin:24px 0 13px}
+.card-chip i{border:1px solid #6E8CAC;border-radius:3px}
+.rewards-card h3{position:relative;z-index:1}
+.rewards-card p{letter-spacing:1.5px;font-size:10px;font-weight:700;color:#E2EDF8;margin-bottom:0}
+.room{border-radius:16px;box-shadow:0 7px 24px rgba(20,43,75,.07);transition:transform .2s ease}
+.room-art{height:225px}
+.room-art small{background:#173F70;border-radius:8px}
+.room-content{padding:24px}
+.room-heading{display:flex;align-items:center;gap:12px}
+.room-key-symbol{width:36px;height:36px;border-radius:10px;background:#EDF4FA;color:#173F70;display:grid;place-items:center;font-size:23px;flex-shrink:0}
+.room-heading h2{margin:0!important}
+.room-content p{min-height:76px}
+.metrics div,.panel,.member-head{border-radius:14px;border-color:#DCE7F3}
+.metrics div{background:#F0F5FB}
+.metrics strong{color:#173F70}
+.hotel-membership{background:linear-gradient(110deg,#EDF4FA,#FFF);border-left:4px solid #173F70}
+.notice{background:#F2F6FB;border-left:3px solid #F50012}
+.shield{color:#173F70}
+footer{background:#132F53}
+footer button{color:white}
+@media(max-width:600px){.booking{padding:22px 18px}.booking-heading{gap:10px}.desk-symbol{width:45px;height:45px;font-size:27px}.room-content p{min-height:auto}.rewards-card{padding:25px}}
