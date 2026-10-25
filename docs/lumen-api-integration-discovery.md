@@ -10,6 +10,15 @@ Status: Discovery only. No production API integration or guest authentication ha
 - A cookie being present does **not** alone prove that it carries the auth session; the login endpoint, cookie issuance, authorization rules and CSRF mechanism remain unverified.
 - This endpoint is **staff-specific** and must not be presented as a guest data API.
 
+
+## Observed hotel-room endpoint (2026-10-25)
+- Browser request: `GET https://lumenpms.com/api/Hotel/HotelRoom/GetHotelRooms/4`
+- Browser response: HTTP 200.
+- The trailing `4` is **unverified**; could be hotel/property ID or a different route parameter.
+- Request's authentication and response JSON schema have not been verified. It must not be assumed to return date-specific sellable inventory or to be safe for anonymous public use.
+- Next: inspect a **redacted sample response schema**, using placeholder values and no real room/access codes, guest names, contacts, tokens, cookies, or financial data. Confirm with PMS developer which endpoint provides availability for arbitrary check-in/check-out dates, and whether out-of-service rooms and confirmed reservations are accounted for.
+- Before server integration: obtain developer-approved service-to-service credentials with hotel scope, not staff browser cookies.
+
 ## Security decisions (mandatory)
 1. Do NOT commit staff passwords, browser session cookies, API keys, or guest data to GitHub.
 2. Do NOT reuse or forward a staff browser's cookie from public guest JavaScript.
