@@ -19,6 +19,21 @@ Status: Discovery only. No production API integration or guest authentication ha
 - Next: inspect a **redacted sample response schema**, using placeholder values and no real room/access codes, guest names, contacts, tokens, cookies, or financial data. Confirm with PMS developer which endpoint provides availability for arbitrary check-in/check-out dates, and whether out-of-service rooms and confirmed reservations are accounted for.
 - Before server integration: obtain developer-approved service-to-service credentials with hotel scope, not staff browser cookies.
 
+
+## Redacted aggregate analysis of user-provided GetHotelRooms/4 response (2026-10-25)
+The uploaded JSON is a **snapshot**, not real-time live data or a future-date inventory feed. Do not commit its raw per-room response to a public repository.
+
+- The response is a JSON array containing **35 rooms**, all with top-level `hotelID = 4`.
+- Lumen room types: ID 4 `King Non Smoking` (19 rooms, occupancy 2); ID 5 `King Smoking` (12 rooms, occupancy 2); ID 6 `Queen Non Smoking` (4 rooms, occupancy 4).
+- Status counts: `Booked` 28, `Ready to CheckIn` 6, `Out of Service` 1.
+- Status by type: type 4 = 14 booked / 4 ready / 1 out of service; type 5 = 11 booked / 1 ready; type 6 = 3 booked / 1 ready.
+- All 35 items report `isHotelRoomActive=true`, `isHotelRoomDeleted=false` and empty `hotelRoomBookings` arrays.
+- Each item includes `hotelRoomID`, `hotelID`, `hotelRoomTypeID`, `roomNumber`, `floor`, `maxOccupancy`, `roomStatus`, `description`, `isHotelRoomActive`, `isHotelRoomDeleted`, `hotel`, `hotelRoomType`, `hotelRoomBookings`.
+- Embedded `hotelRoomType.numberOfRoomsAvailable` is zero in these records, including rooms marked ready. This is **not** a trustworthy date-scoped availability feed.
+- Owner previously described a 57-room property; uploaded response only has 35. Ask developer whether this is filtered, incomplete, paginated, or configured for a subset.
+- Do not expose per-room statuses, numbers or operational information on the public site. Public API should return room-type-level inventory only for requested check-in/out dates, from approved PMS availability logic.
+- Next discovery: identify date-specific availability and rate-quote endpoints, plus secure service credentials and permitted data scopes.
+
 ## Security decisions (mandatory)
 1. Do NOT commit staff passwords, browser session cookies, API keys, or guest data to GitHub.
 2. Do NOT reuse or forward a staff browser's cookie from public guest JavaScript.
