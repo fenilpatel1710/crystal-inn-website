@@ -1,6 +1,11 @@
 'use client';
 import {useState} from 'react';
 type Page='home'|'rooms'|'rewards'|'reviews'|'account';
+// Property listing image URLs for prototype display; replace with owned image assets before production.
+const exterior = "https://www.dayuse.com/_next/image?q=75&url=https%3A%2F%2Fstatic.dayuse.com%2Fhotels%2F20739%2F499669dc8ce8206527d489d9ef890f2d-crystal-inn-northwest-290.jpg&w=3840";
+const suite = "https://cf.bstatic.com/xdata/images/hotel/max1024x768/791838179.jpg?k=8ff77c4d52ecb17a14b39fb001847f91c39f2e75440ccfc1f332b7897825b3bd&o=";
+const room = "https://images.trvl-media.com/lodging/119000000/118960000/118953800/118953774/2324f443.jpg?impolicy=resizecrop&ra=fill&rh=575&rw=575";
+
 const roomTypes=[
 {name:'King Room',description:'Unwind with a spacious king bed and spa-inspired shower.',tag:'COMFORT'},
 {name:'Double Room',description:'A convenient choice for families and traveling companions.',tag:'FAMILY'},
