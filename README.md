@@ -1,5 +1,10 @@
 # Crystal Inn Northwest 290 — Website & Guest Portal Preview
 
+## Work from home / Lumen PMS
+
+**Start with [the at-home setup and repository handoff](docs/START-HERE-AT-HOME.md).** It links to the Lumen Feature Iteration 11 source archive, architecture brief, no-touch integration code, configuration template, and critical security prerequisites. The pilot is **disabled** and has **not been validated** with a live Lumen session. **Do not enable it until the reported credential exposure and PMS security vulnerabilities are addressed.**
+
+
 This repository contains an early **demonstration prototype** of the Crystal Inn Northwest 290 hotel website and sample guest portal, built with Next.js and TypeScript. Real reservations, SMS OTP, PMS access, payments and review integrations **are not enabled**.
 
 ## Deploy to Vercel
