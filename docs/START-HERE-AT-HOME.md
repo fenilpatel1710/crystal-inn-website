@@ -75,3 +75,7 @@ See [the no-touch pilot guide](./lumen-no-touch-pilot.md) for prerequisites and 
 ## Deployment notes
 
 Website: Next.js on Vercel; new commits on `main` may trigger an automatic build. Lumen: unchanged. GitHub commits are **not evidence** of a successful deployment or API connection. Verify the deployment in Vercel before relying on it.
+
+## Guest Portal — existing guest-code linking
+
+See [guest link first, then history](./lumen-guest-link-then-history.md). This design keeps existing Lumen GuestCode/GuestID values, uses proper guest verification, and gates history behind an approved account link. No real SMS, link approval or history connection has been activated.
