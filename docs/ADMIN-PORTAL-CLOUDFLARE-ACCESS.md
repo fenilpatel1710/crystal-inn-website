@@ -29,7 +29,7 @@ Open https://crystalinnstay.com/admin after the latest commit is successfully de
 - Email: crystalinngessner@gmail.com
 - Password: the value you securely entered as ADMIN_PASSWORD
 
-Admin sessions expire in 8 hours, use Secure/HttpOnly/SameSite=Strict cookies, and authorization checks run on every data API call. Five failed attempts from one IP within 15 minutes trigger a 15-minute lockout. Do not rely on the sign-in page alone: the backend checks the signed session.
+Admin sessions expire in 1 hour, use Secure/HttpOnly/SameSite=Strict cookies, and authorization checks run on every data API call. Five failed attempts from one IP within 15 minutes trigger a 15-minute lockout. Do not rely on the sign-in page alone: the backend checks the signed session.
 
 ## 4. What the portal does
 - View the latest 200 website reservation records. No automatic confirmations.
