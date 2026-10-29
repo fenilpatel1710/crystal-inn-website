@@ -43,7 +43,7 @@ export async function POST(req:NextRequest){
   await db.prepare('DELETE FROM admin_login_attempts WHERE client_key=?').bind(clientKey).run();
   const token=await signSession(env.secret);
   const response=NextResponse.json({ok:true,email:ADMIN_EMAIL},{headers:protectedHeaders});
-  response.cookies.set(COOKIE,token,{httpOnly:true,secure:true,sameSite:'strict',path:'/',maxAge:28800});
+  response.cookies.set(COOKIE,token,{httpOnly:true,secure:true,sameSite:'strict',path:'/',maxAge:3600});
   return response;
  }catch{
   return NextResponse.json({error:'Login service unavailable. Confirm the admin security database table exists.'},
