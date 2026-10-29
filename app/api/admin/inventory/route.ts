@@ -47,7 +47,7 @@ export async function PUT(req:NextRequest){
   await auth.db.prepare(`INSERT INTO nightly_inventory(room_type_id,stay_date,allotment,rate_cents,stop_sell)
      VALUES (?,?,?,?,?) ON CONFLICT(room_type_id,stay_date) DO UPDATE SET
      allotment=excluded.allotment,rate_cents=excluded.rate_cents,stop_sell=excluded.stop_sell,updated_at=CURRENT_TIMESTAMP`)
-     .bind(roomTypeId,stayDate,allotment,rateCents as number|null,stopSell?1:0).run();
+     .bind(roomTypeId as string,stayDate as string,allotment as number,rateCents as number|null,stopSell?1:0).run();
   return NextResponse.json({ok:true},{headers:protectedHeaders});
  }catch{return NextResponse.json({error:'Unable to save nightly settings.'},{status:503,headers:protectedHeaders});}
 }
