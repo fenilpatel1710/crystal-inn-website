@@ -1,5 +1,10 @@
 # Crystal Inn Northwest 290 — Website & Guest Portal Preview
 
+## Reservation request form (Cloudflare)
+
+New route: **/book**. The homepage and room cards link to it. The server endpoint **POST /api/reservations** only accepts requests once the hotel has configured `RESEND_API_KEY`, `RESERVATION_NOTIFY_EMAIL`, and `RESERVATION_FROM_EMAIL` as encrypted Cloudflare Worker secrets. Until then it returns a clear service-unavailable message rather than pretending to book. It emails front desk for manual review only; **no Lumen booking or cancellation writes** are enabled. [Launch checklist](docs/RESERVATION-REQUEST-LAUNCH.md).
+
+
 ## Roadmap to production
 
 Start with [the staged production launch plan](docs/PRODUCTION-LAUNCH-PLAN.md). Online bookings will go through an approved channel manager with **manual room allotment**. Lumen remains independent for short stays and front desk; guest-code history linking comes later through an authorized, verified process.
