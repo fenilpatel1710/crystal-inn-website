@@ -10,7 +10,7 @@ This is **not** a booking engine or a Lumen integration. It sends a reservation 
 1. Create a Resend account and verify that you control `crystalinnstay.com` by adding its required DNS records in Cloudflare. Review existing MX/SPF/DKIM before adding records.
 2. In Cloudflare > Workers & Pages > crystal-inn-website > Settings > Variables and Secrets, add **encrypted secrets**:
    - `RESEND_API_KEY` — restricted API key from Resend, not in GitHub.
-   - `RESERVATION_NOTIFY_EMAIL` — set to **`crystalinngessner@gmail.com`** (the operator-designated inbox for all hotel reservation records and Lumen sync failure alerts).
+   - `RESERVATION_NOTIFY_EMAIL` — set to **`frontdesk@crystalinnstay.com`** (the operator-designated inbox for all hotel reservation records and Lumen sync failure alerts).
    - `RESERVATION_FROM_EMAIL` — verified sender address (e.g. `reservations@crystalinnstay.com`).
 3. Redeploy if necessary to ensure secrets are available at runtime.
 4. Test on `https://crystalinnstay.com/book` using *synthetic* contact details. Verify the message actually reaches the monitored inbox, that its date/type information is correct, and that frontend calls the request a request only.
@@ -39,4 +39,4 @@ The current `POST /api/reservations` sends **one request email**, only if the th
 
 ## Designated hotel recipient
 
-The operator designated **crystalinngessner@gmail.com** to receive every website reservation email and additional Lumen synchronization-failure alerts. Keep the recipient configurable via Cloudflare Worker environment variables rather than hardcoding it into public website source. This is the recipient address, **not** the sender address. The notification endpoint requires an active `RESEND_API_KEY` and separately verified `RESERVATION_FROM_EMAIL`; no automatic emails can be assumed delivered until those are configured and tested. The Lumen failure-alert workflow is not implemented yet.
+The operator designated **frontdesk@crystalinnstay.com** to receive every website reservation email and additional Lumen synchronization-failure alerts. Keep the recipient configurable via Cloudflare Worker environment variables rather than hardcoding it into public website source. This is the recipient address, **not** the sender address. The notification endpoint requires an active `RESEND_API_KEY` and separately verified `RESERVATION_FROM_EMAIL`; no automatic emails can be assumed delivered until those are configured and tested. The Lumen failure-alert workflow is not implemented yet.
