@@ -24,7 +24,7 @@ export function originOk(req:NextRequest){
 export async function signSession(secret:string){
  return new SignJWT({email:ADMIN_EMAIL,role:'admin'})
   .setProtectedHeader({alg:'HS256'}).setIssuedAt().setIssuer('crystalinnstay-admin')
-  .setAudience('crystalinnstay-admin-portal').setExpirationTime('8h')
+  .setAudience('crystalinnstay-admin-portal').setExpirationTime('1h')
   .sign(new TextEncoder().encode(secret));
 }
 export async function requireAdmin(req:NextRequest):Promise<{db:DB}|NextResponse>{
