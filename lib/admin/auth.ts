@@ -14,7 +14,7 @@ export function getAdminEnv(){
  return {db:env.DB as DB|undefined,password,secret};
 }
 export function isConfigured(env:ReturnType<typeof getAdminEnv>){
- return Boolean(env.db&&env.password.length>=16&&new TextEncoder().encode(env.secret).length>=32);
+ return Boolean(env.db&&env.password.length>=12&&new TextEncoder().encode(env.secret).length>=32);
 }
 export function originOk(req:NextRequest){
  const origin=req.headers.get('origin');
