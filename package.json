@@ -15,7 +15,8 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@opennextjs/cloudflare": "^1.20.14"
+    "@opennextjs/cloudflare": "^1.20.14",
+    "jose": "^6.1.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
