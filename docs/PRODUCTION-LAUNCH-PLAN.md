@@ -71,3 +71,9 @@ This file is an implementation plan; it is **not a claim that database, SMS, pro
 
 ## Owner decision — Cloudflare and Lumen authoritative data (2026-10-29)
 The website database is **not** a second PMS. Store website account registration, OTP auth metadata, verified PMS ID mapping, permissions, and audit logs in Cloudflare D1. Lumen is authoritative for guest profiles, stays, rewards, payments and folios. Guest history and points are requested from Lumen via a properly secured integration when needed; use explicit short-lived caching only if approved. Phone numbers and GuestCodes are identifiers, not sufficient proof to access another person's history. No channel manager work at this time.
+
+## Guest vs front-desk access rule (owner clarification, 2026-10-29)
+- **Guest UI:** phone number -> server-validated SMS OTP -> secure session -> system resolves already-verified portal-to-Lumen GuestID/GuestCode mapping internally -> shows ONLY their own profile, eligible stays, and reward balance. No guest search, guest code lookup form, guest picker, or client-selected Lumen GuestID.
+- **Staff UI:** authorized front-desk personnel may search guest records by phone, name, GuestCode and GuestID to assist with verified linking, correction and reconciliation. Implement role-based authorization and audit searches.
+- **First-time/ambiguous matches:** phone OTP alone does not authorize viewing a historical PMS record (phone reassignment/shared numbers). Background candidate matching is allowed, but private history remains hidden until account ownership is established, potentially via additional verification/staff approval.
+- **Backend:** retrieve Lumen history using GuestID from the server-side verified link, not user-supplied identifiers. Enforce hotel scope and prohibit cross-guest reads.
