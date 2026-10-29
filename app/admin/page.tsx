@@ -12,6 +12,12 @@ type Night={room_type_id:string;stay_date:string;allotment:number;rate_cents:num
 const roomNames=['King Non-Smoking','King Smoking','Queen Non-Smoking'];
 const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
 export default function AdminPage(){
+ const [authenticated,setAuthenticated]=useState(false);
+ const [checking,setChecking]=useState(true);
+ const [loginEmail,setLoginEmail]=useState('crystalinngessner@gmail.com');
+ const [password,setPassword]=useState('');
+ const [loginBusy,setLoginBusy]=useState(false);
+ const [loginError,setLoginError]=useState('');
  const [tab,setTab]=useState<'reservations'|'inventory'>('reservations');
  const [reservations,setReservations]=useState<Reservation[]>([]);
  const [rooms,setRooms]=useState<Room[]>([]);
@@ -30,7 +36,8 @@ export default function AdminPage(){
  const fetchJson=useCallback(async(url:string,init?:RequestInit)=>{
   const response=await fetch(url,{...init,cache:'no-store'});
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error(data.error||'Unable to load. Check Cloudflare Access login settings.');
+  if(response.status===401){setAuthenticated(false);throw Error('Your session has expired. Please sign in.');}
+  if(!response.ok)throw Error(data.error||'Unable to load admin data.');
   return data;
  },[]);
  const reload=useCallback(async()=>{
@@ -40,11 +47,27 @@ export default function AdminPage(){
        fetchJson('/api/admin/reservations'),
        fetchJson('/api/admin/inventory?from='+encodeURIComponent(from))
      ]);
-     setReservations(r.reservations||[]);setRooms(i.rooms||[]);setInventory(i.inventory||[]);
+     setReservations(r.reservations||[]);setRooms(i.rooms||[]);setInventory(i.inventory||[]);setAuthenticated(true);
    }catch(err){setError(err instanceof Error?err.message:'Unable to open admin data.');}
-   finally{setLoading(false);}
+   finally{setLoading(false);setChecking(false);}
  },[fetchJson,from]);
  useEffect(()=>{void reload();},[reload]);
+ async function login(e:React.FormEvent<HTMLFormElement>){
+   e.preventDefault();setLoginBusy(true);setLoginError('');
+   try{
+     const response=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},
+       credentials:'same-origin',body:JSON.stringify({email:loginEmail,password})});
+     const result=await response.json().catch(()=>({}));
+     if(!response.ok)throw Error(result.error||'Sign-in failed.');
+     setPassword('');setAuthenticated(true);await reload();
+   }catch(err){setLoginError(err instanceof Error?err.message:'Unable to sign in.');}
+   finally{setLoginBusy(false);}
+ }
+ async function logout(){
+   await fetch('/api/admin/logout',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+   setAuthenticated(false);setReservations([]);setInventory([]);
+ }
+
  const selected=useMemo(()=>inventory.find(x=>x.room_type_id===roomId&&x.stay_date===date),[inventory,roomId,date]);
  useEffect(()=>{
    setRate(selected?.rate_cents==null?'':(selected.rate_cents/100).toFixed(2));
@@ -72,8 +95,24 @@ export default function AdminPage(){
    }catch(err){setError(err instanceof Error?err.message:'Save failed.');}
    finally{setSaving(false);}
  }
+ if(!authenticated)return <main className={styles.page}>
+   <header className={styles.header}><a className={styles.brand} href="/">CRYSTAL INN <span>STAFF CONSOLE</span></a></header>
+   <div className={styles.loginWrap}><form className={styles.loginCard} onSubmit={login}>
+     <p className={styles.eyebrow}>AUTHORIZED STAFF ONLY</p>
+     <h1>Admin sign in</h1><p>Reservations, room prices and availability for Crystal Inn Northwest 290.</p>
+     <label>Email address<input required type="email" autoComplete="username" value={loginEmail}
+       onChange={e=>setLoginEmail(e.target.value)}/></label>
+     <label>Password<input required type="password" autoComplete="current-password"
+       value={password} onChange={e=>setPassword(e.target.value)}/></label>
+     {loginError&&<div role="alert" className={styles.error}>{loginError}</div>}
+     <button className={styles.primary} type="submit" disabled={loginBusy||checking}>
+       {checking?'Checking login…':loginBusy?'Signing in…':'Sign in securely'}
+     </button>
+     <p className={styles.small}>This portal is restricted to crystalinngessner@gmail.com.</p>
+   </form></div>
+  </main>;
  return <main className={styles.page}>
-  <header className={styles.header}><div><a className={styles.brand} href="/">CRYSTAL INN <span>STAFF CONSOLE</span></a><p>Northwest 290 · Houston</p></div><div className={styles.user}>Admin: crystalinngessner@gmail.com</div></header>
+  <header className={styles.header}><div><a className={styles.brand} href="/">CRYSTAL INN <span>STAFF CONSOLE</span></a><p>Northwest 290 · Houston</p></div><div className={styles.user}>Admin: crystalinngessner@gmail.com <button className={styles.secondary} onClick={()=>void logout()}>Sign out</button></div></header>
   <div className={styles.wrap}>
     <div className={styles.heading}><div><p className={styles.eyebrow}>OPERATIONS DASHBOARD</p><h1>Property management</h1><p>Manage reservation requests, room allotments and nightly rates.</p></div><button className={styles.secondary} onClick={()=>void reload()} disabled={loading}>Refresh data</button></div>
     <div className={styles.metrics}>
