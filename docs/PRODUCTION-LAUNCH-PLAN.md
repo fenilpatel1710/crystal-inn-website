@@ -3,10 +3,10 @@ Updated: 2026-10-28
 
 ## Agreed architecture
 - **Lumen PMS unchanged:** manages short stays, walk-ins, physical room assignment, housekeeping, folios and historical guest codes.
-- **Approved channel manager:** staff manually set date/room-type allotment; shared inventory is synchronized across Booking.com, Expedia and Crystal Inn direct bookings. Online reservations do **not** automatically block Lumen rooms.
-- **Crystal Guest Portal:** separate secure SMS OTP login; verified link to existing Lumen GuestID + GuestCode. History shown only after linking and authorization.
+- **Channel management deferred:** do not implement Booking.com/Expedia or third-party channel manager until the hotel owner reauthorizes it. For now, local test reservations use manually allocated website inventory only. They are not confirmed live hotel stays.
+- **Crystal Guest Portal:** Cloudflare Workers + D1 planned for website-only registration/authentication logs, verified phone sign-in, and mappings to existing Lumen GuestID + GuestCode. Lumen stays the source of truth for guest profiles, stay history, reward points and folios. Show Lumen data only after independent guest ownership verification and through a secure, approved server-side connector. New website registration stays pending until securely matched to a PMS record; never auto-create or overwrite Lumen guests without explicit authorized PMS workflow.
 - **Front desk:** notifications and daily-arrivals board; staff manually record online reservations in Lumen.
-- **Initial rollout:** one Crystal Inn property, not multi-hotel.
+- **Initial rollout:** one Crystal Inn property, not multi-hotel. Target hosting is Cloudflare Workers/D1/R2 rather than Vercel; existing Python/SQLite pilot must be ported before deployment. Avoid duplicating Lumen history and reward ledgers in D1 except narrowly scoped, transient cached data if needed.
 
 ## Milestones and definition of done
 
@@ -26,7 +26,7 @@ Updated: 2026-10-28
 - Manually allocated inventory tracked by date and room type; channel manager remains system of record for online sales.
 - Webhook verification and retry/dead-letter/reconciliation jobs before relying on alerts.
 
-### Release 2: Live direct reservations
+### Deferred: Live direct reservations (not authorized for current phase)
 - Select and contract an approved Booking.com + Expedia channel manager with partner API **or** embedded booking engine. Verify account-specific API permission to read date-based inventory, quote rates, create/cancel reservations and receive booking events.
 - Keep all website booking requests server-side, use provider's live inventory/rates and idempotency; do not claim booking until provider confirms.
 - Confirm one shared pool of allocated online inventory; manual allotment updates are reconciled to physical readiness in Lumen.
@@ -40,12 +40,13 @@ Updated: 2026-10-28
 - Secure existing Lumen GuestID and GuestCode linking, with stronger proof or staff approval and audit trails. GuestCode is an identifier, **not** a password.
 - Unlinked accounts cannot see real guest history or balances.
 
-### Release 4: Existing guest history / rewards
-- Start with encrypted, authorized property-scoped export/import (or vetted, narrowly scoped read-only server integration) from Lumen.
-- Store guest code/id mapping, completed stays and reward ledger, source IDs and last-synced timestamps.
-- History access derived exclusively from authenticated portal user plus *verified* approved linkage; prevent enumeration or cross-guest access.
-- Protect source exports; do not upload real guest records, staff cookies or DB backups to public GitHub.
-- Keep offline/short-stay records independent of channel manager reservations and reconcile duplicates.
+### Release 4: Existing guest history / rewards (Lumen primary source)
+- Prefer a vetted, narrow, authorized **read-only server-side Lumen API** to fetch guest details, eligible historical stays, and rewards on demand; do not expose Lumen staff endpoints to guests.
+- Website D1 stores only verified (portal_user_id, hotel_id, Lumen GuestID, Lumen GuestCode) mappings, onboarding status, and audit metadata, not the authoritative history or rewards ledger.
+- If current Lumen API cannot securely authorize a guest-specific read, use a restricted encrypted export/reconciliation process temporarily or modify Lumen to provide a safe API; do not use a shared staff cookie to proxy arbitrary guest queries.
+- Each history request derives the guest identity from the secure session and approved mapping, never an untrusted browser-provided GuestCode.
+- Lumen creates and maintains permanent guest records under approved staff workflow; new portal registrations remain local logs until securely linked. Do not automatically create Lumen records or deduplicate by phone alone.
+- Protect source exports and API secrets; never upload guest records, staff cookies or DB backups to public GitHub.
 
 ## Prerequisites and owners
 | Dependency | Owner | Blocker |
@@ -62,8 +63,11 @@ Updated: 2026-10-28
 1. Keep prototype operational but marked demo; do not use sample OTP for production.
 2. Add production database schema and independent role-based staff authentication.
 3. Build the internal arrival dashboard with synthetic data and manual Lumen entry state.
-4. Connect approved channel manager data feed after provider confirmed; test reservation and inventory events.
-5. Build real guest authentication and verified linking; then enable history.
+4. Build real guest authentication and verified Lumen GuestCode/GuestID linking; then enable guest-specific, read-only history and points queries.
+5. Keep OTA/channel-manager integrations disabled until requested again.
 
 ## Current status
 This file is an implementation plan; it is **not a claim that database, SMS, provider API, payments or live reservations are deployed**. The existing GitHub repository also contains a Lumen source ZIP in a PUBLIC repository; investigate and remediate reported credential exposure before processing any real guest data. See docs/START-HERE-AT-HOME.md.
+
+## Owner decision — Cloudflare and Lumen authoritative data (2026-10-29)
+The website database is **not** a second PMS. Store website account registration, OTP auth metadata, verified PMS ID mapping, permissions, and audit logs in Cloudflare D1. Lumen is authoritative for guest profiles, stays, rewards, payments and folios. Guest history and points are requested from Lumen via a properly secured integration when needed; use explicit short-lived caching only if approved. Phone numbers and GuestCodes are identifiers, not sufficient proof to access another person's history. No channel manager work at this time.
