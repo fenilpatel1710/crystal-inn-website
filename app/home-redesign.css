@@ -1,0 +1,123 @@
+/* Crystal Inn visual system — isolated from legacy global styles */
+.ci-site{--navy:#0d2c57;--blue:#184aaf;--blue2:#2664d7;--pale:#f3f7fd;--text:#243853;--muted:#62738a;--line:#e4eaf3;background:white;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.ci-site *{box-sizing:border-box}
+.ci-site .ci-shell{max-width:1180px;margin:0 auto;padding-left:26px;padding-right:26px}
+.ci-site button,.ci-site input,.ci-site select{font:inherit}
+.ci-utility{background:#0e2b53;color:#d8e7ff;font-size:12px}
+.ci-utility .ci-shell{min-height:35px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.ci-utility span,.ci-utility a{display:inline-flex;align-items:center;gap:8px}
+.ci-utility a{color:#e9f1ff;text-decoration:none}
+.ci-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.98);border-bottom:1px solid var(--line);box-shadow:0 3px 16px #12315f08}
+.ci-navbar{display:flex;align-items:center;justify-content:space-between;min-height:80px;gap:25px}
+.ci-brand{border:none;background:none;display:flex;align-items:center;text-align:left;gap:12px;color:var(--navy);font-size:21px;font-weight:900;letter-spacing:2px;cursor:pointer;flex-shrink:0}
+.ci-brand span small{display:block;font-size:9px;letter-spacing:1.55px;font-weight:600;margin-top:4px}
+.ci-nav{display:flex;align-items:center;gap:3px}
+.ci-nav button{font-size:13px;font-weight:700;white-space:nowrap;border:none;background:none;color:#425570;padding:13px 12px;cursor:pointer}
+.ci-nav button:hover,.ci-nav button.ci-nav-active{color:var(--blue)}
+.ci-nav-cta{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--blue);padding:13px 18px;border-radius:7px;color:white;text-decoration:none;font-size:13px;font-weight:800;white-space:nowrap;margin-left:7px}
+.ci-nav-cta:hover{background:#103986}
+.ci-mobile-menu{display:none;border:0;background:white;font-size:27px;color:var(--navy)}
+.ci-hero{min-height:530px;background-position:center 45%;background-size:cover;display:flex;align-items:center;color:white}
+.ci-hero-inner{width:100%;padding-top:74px;padding-bottom:114px}
+.ci-hero-copy{max-width:700px}
+.ci-eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#2258ae;display:flex;align-items:center;gap:8px;text-transform:uppercase;margin:0}
+.ci-on-dark{color:#bcd5ff}
+.ci-hero h1{color:white;font:normal clamp(40px,5.7vw,70px)/1.1 Georgia,serif;letter-spacing:-1.9px;margin:20px 0 18px}
+.ci-hero h1 em{color:#ebf3ff;font-weight:400}
+.ci-hero-copy>p{color:#e5effc;font-size:17px;line-height:1.8;max-width:540px}
+.ci-hero-actions{display:flex;align-items:center;gap:12px;margin-top:30px;flex-wrap:wrap}
+.ci-btn{border:none;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 20px;min-height:49px;text-decoration:none;font-weight:800;font-size:14px;cursor:pointer}
+.ci-btn-white{background:#fff;color:#123b78}
+.ci-btn-outline{background:#fff1;color:white;border:1px solid #dceaff75}
+.ci-btn-blue{background:var(--blue);color:white}
+.ci-btn-blue:hover{background:#103a90}
+.ci-btn-white:hover{background:#eef4ff}
+.ci-hero-caption{display:flex;align-items:center;gap:8px;color:#c6dafa;font-size:12px;margin-top:26px}
+.ci-booking-wrap{position:relative;margin-top:-58px;z-index:2}
+.ci-booking-widget{display:grid;grid-template-columns:1.2fr 1fr 1fr .85fr auto;align-items:end;gap:16px;background:white;border:1px solid #e3e9f3;border-radius:13px;box-shadow:0 18px 40px #102c5927;padding:24px}
+.ci-booking-title{display:flex;gap:11px;align-items:center;align-self:center}
+.ci-icon-tile{width:46px;height:46px;background:#e9f0fc;color:#2053ad;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.ci-booking-title strong{display:block;font:normal 19px Georgia,serif;color:var(--navy)}
+.ci-booking-title small{font-size:11px;color:var(--muted);display:block;margin-top:5px}
+.ci-booking-widget label{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ci-booking-widget label span{font-size:10px;color:#566b88;font-weight:800;letter-spacing:1.3px}
+.ci-booking-widget input,.ci-booking-widget select{border:1px solid #d3ddeb;border-radius:6px;padding:12px 9px;background:#fbfcff;min-width:0;color:#243853;font-size:13px;min-height:46px}
+.ci-inline-notice{background:#fff6e5;border-left:3px solid #d99b33;padding:12px 16px;font-size:13px;color:#66502d}
+.ci-section{padding-top:90px;padding-bottom:90px}
+.ci-section-head{display:flex;align-items:end;justify-content:space-between;gap:35px;margin-bottom:32px}
+.ci-section-head h2,.ci-rewards-copy h2{font:normal clamp(29px,3.2vw,42px)/1.17 Georgia,serif;letter-spacing:-.6px;margin:13px 0 0;color:var(--navy);max-width:600px}
+.ci-section-head>p{max-width:340px;font-size:14px;line-height:1.75;color:var(--muted);margin:0}
+.ci-amenities{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.ci-amenity{border:1px solid var(--line);border-radius:12px;padding:26px;transition:transform .2s,box-shadow .2s;background:white}
+.ci-amenity:hover{transform:translateY(-3px);box-shadow:0 16px 26px #163b7a12}
+.ci-amenity-icon,.ci-bottom-symbol{height:52px;width:52px;background:#e9f0fe;border-radius:13px;display:grid;place-items:center;color:#2455b2}
+.ci-amenity h3{font-size:17px;color:var(--navy);margin:17px 0 9px}
+.ci-amenity p{color:var(--muted);line-height:1.7;font-size:13px;margin:0}
+.ci-rooms-section{background:#f4f7fc}
+.ci-text-action{display:flex;align-items:center;gap:10px;border:0;background:none;color:var(--blue);font-weight:800;font-size:14px;cursor:pointer}
+.ci-room-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.ci-room-card{background:white;border:1px solid #e0e7f0;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px #102a5510;transition:transform .2s}
+.ci-room-card:hover{transform:translateY(-3px)}
+.ci-room-photo{height:210px;position:relative;background:#d5dfec;overflow:hidden}
+.ci-room-photo img{height:100%;width:100%;object-fit:cover;display:block}
+.ci-room-photo span{position:absolute;top:15px;left:15px;background:#fff;color:#224a8a;font-weight:800;font-size:10px;letter-spacing:1.2px;padding:9px 11px;border-radius:4px}
+.ci-room-body{padding:24px}
+.ci-room-symbol{color:#2351a8}
+.ci-room-body h3{font:normal 24px Georgia,serif;color:var(--navy);margin:9px 0}
+.ci-room-body p{color:var(--muted);line-height:1.65;font-size:13px;min-height:42px}
+.ci-room-body a,.ci-bottom-grid a{display:flex;align-items:center;gap:8px;color:var(--blue);font-weight:800;text-decoration:none;font-size:13px;margin-top:16px}
+.ci-footnote{font-size:11px;color:#77879d;line-height:1.7;margin-top:20px}
+.ci-rewards-feature{background:linear-gradient(120deg,#102f5e,#2252a8);border-radius:17px;padding:55px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px;overflow:hidden}
+.ci-rewards-copy h2{color:white}
+.ci-rewards-copy>p:not(.ci-eyebrow){font-size:15px;color:#d9e8ff;line-height:1.8;margin:20px 0 28px;max-width:410px}
+.ci-loyalty-card{border-radius:17px;padding:28px;background:linear-gradient(133deg,#ecf2ff,#fff 48%,#d9e5fa);color:#163b77;min-height:245px;box-shadow:0 20px 45px #071a3745;transform:rotate(2deg);max-width:420px;width:100%;justify-self:center}
+.ci-member-top{display:flex;gap:10px;align-items:center;font-size:14px;letter-spacing:2px;font-weight:900}
+.ci-member-top span{flex:1}.ci-member-top small{display:block;font-size:9px;letter-spacing:1.4px;margin-top:5px}
+.ci-member-mid{font:normal 29px Georgia,serif;margin-top:39px}
+.ci-member-bottom{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:1.5px;margin-top:28px}
+.ci-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding-top:0;padding-bottom:90px}
+.ci-bottom-grid article{padding:33px;border-radius:13px;background:#f3f7fe;border:1px solid #e7ecf5}
+.ci-bottom-grid .ci-eyebrow{margin-top:23px}
+.ci-bottom-grid h3{font:normal 27px Georgia,serif;color:var(--navy);margin:12px 0}
+.ci-bottom-grid p:not(.ci-eyebrow){font-size:13px;line-height:1.8;color:var(--muted)}
+.ci-footer{background:#0b2549;color:#d2dff1}
+.ci-footer-main{display:grid;grid-template-columns:1.5fr 1fr 1.1fr;gap:48px;padding-top:58px;padding-bottom:45px}
+.ci-footer-brand{display:flex;align-items:center;gap:12px;color:white;letter-spacing:2px;font-size:18px}
+.ci-footer-main p{font-size:13px;line-height:1.9}
+.ci-footer-main>div:not(:first-child){display:flex;flex-direction:column;align-items:flex-start;gap:13px}
+.ci-footer-main>div>strong{color:white;margin-bottom:7px}
+.ci-footer-main button,.ci-footer-main a{background:none;padding:0;border:none;color:#d2dff1;text-decoration:none;font-size:13px;cursor:pointer}
+.ci-footer-main span{font-size:11px;line-height:1.7;color:#a9bbd3}
+.ci-footer-bottom{border-top:1px solid #ffffff21;display:flex;justify-content:space-between;gap:20px;padding-top:20px;padding-bottom:24px;font-size:11px;color:#adbed6}
+.ci-inner{padding-top:68px;padding-bottom:110px;min-height:65vh}
+.ci-inner h1{font:normal clamp(37px,5vw,57px) Georgia,serif;color:var(--navy);margin:15px 0}
+.ci-inner-sub{max-width:630px;line-height:1.8;font-size:16px;color:var(--muted);margin-bottom:39px}
+.ci-reward-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin:30px 0}
+.ci-reward-metrics article{border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:9px;color:#1b4b9f;background:#f8faff}
+.ci-reward-metrics strong{font:normal 35px Georgia,serif;color:var(--navy)}
+.ci-reward-metrics span{font-size:12px;color:#5d718c}
+.ci-inner-rewards{margin-top:40px}
+.ci-reviews-content{padding-bottom:0}
+.ci-account-layout{display:grid;grid-template-columns:1.3fr .85fr;gap:32px;align-items:start}
+.ci-account-panel{padding:34px;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 35px #0b316014;display:flex;flex-direction:column;gap:19px;min-height:330px}
+.ci-account-form-header{text-align:center}
+.ci-account-form-header .ci-icon-tile{margin:auto}
+.ci-account-form-header h2{font:normal 27px Georgia,serif;color:var(--navy);margin:16px 0 7px}
+.ci-account-form-header p{font-size:13px;color:var(--muted);line-height:1.7}
+.ci-account-panel label{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:8px;color:#455979}
+.ci-account-panel input{padding:14px;border-radius:7px;border:1px solid #ccd8e9;font-size:15px}
+.ci-account-aside>p{display:flex;gap:9px;line-height:1.7;font-size:13px;color:var(--muted);margin-top:26px}
+.ci-account-aside .ci-loyalty-card{transform:none}
+.ci-demo-tag{background:#fff4de;border-radius:7px;padding:11px;display:flex;gap:9px;align-items:center;font-size:12px;color:#78521f}
+.ci-account-greeting{display:flex;gap:17px;align-items:center}
+.ci-avatar{width:55px;height:55px;border-radius:50%;display:grid;place-items:center;background:#edf3fd;color:#2d56a1}
+.ci-account-greeting small{font-size:10px;letter-spacing:1.2px;color:#657c9c}
+.ci-account-greeting h2{font:normal 28px Georgia,serif;color:var(--navy);margin:3px 0}
+.ci-account-greeting p{font-size:12px;color:var(--muted);margin:0}
+.ci-dashboard-metrics{grid-template-columns:1fr 1fr;margin:8px 0}
+.ci-dashboard-list>div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 0;border-bottom:1px solid var(--line)}
+.ci-dashboard-list>div>span{display:flex;gap:11px;align-items:center;font-weight:700;color:var(--navy);font-size:13px}
+.ci-dashboard-list small{font-size:11px;color:var(--muted)}
+@media(max-width:1050px){.ci-booking-widget{grid-template-columns:1fr 1fr 1fr}.ci-booking-title{grid-column:1/-1}.ci-nav button{padding:10px 7px}.ci-rewards-feature{padding:40px}}
+@media(max-width:780px){.ci-mobile-menu{display:block}.ci-nav{display:none;position:absolute;top:100%;left:0;right:0;padding:15px 22px 25px;background:white;box-shadow:0 15px 20px #102d571c;flex-direction:column;align-items:stretch}.ci-nav-open{display:flex}.ci-nav button{text-align:left;padding:13px}.ci-nav-cta{margin:8px 0}.ci-hero{min-height:500px}.ci-booking-widget{grid-template-columns:1fr 1fr}.ci-amenities{grid-template-columns:1fr 1fr}.ci-room-grid{grid-template-columns:1fr 1fr}.ci-rewards-feature{grid-template-columns:1fr}.ci-bottom-grid{grid-template-columns:1fr}.ci-footer-main{grid-template-columns:1fr 1fr}.ci-account-layout{grid-template-columns:1fr}}
+@media(max-width:570px){.ci-site .ci-shell{padding-left:18px;padding-right:18px}.ci-navbar{min-height:67px}.ci-brand{font-size:16px}.ci-brand img{width:40px;height:40px}.ci-brand span small{font-size:8px}.ci-utility{font-size:10px}.ci-utility .ci-shell>span{max-width:65%}.ci-hero-inner{padding-top:65px;padding-bottom:107px}.ci-hero h1{font-size:41px}.ci-hero-copy>p{font-size:15px}.ci-booking-widget{grid-template-columns:1fr;gap:13px;padding:20px}.ci-booking-title{grid-column:1}.ci-section{padding-top:65px;padding-bottom:65px}.ci-section-head{display:block}.ci-section-head>p{margin-top:17px}.ci-amenities{grid-template-columns:1fr 1fr;gap:10px}.ci-amenity{padding:18px}.ci-amenity-icon{width:44px;height:44px}.ci-amenity h3{font-size:14px}.ci-amenity p{font-size:12px}.ci-room-grid{grid-template-columns:1fr}.ci-rewards-feature{padding:29px 23px}.ci-loyalty-card{transform:none;padding:20px;min-height:215px}.ci-member-mid{font-size:24px}.ci-footer-main{grid-template-columns:1fr;gap:25px}.ci-footer-bottom{flex-direction:column}.ci-reward-metrics{grid-template-columns:1fr}.ci-dashboard-metrics{grid-template-columns:1fr 1fr}.ci-account-panel{padding:20px}.ci-inner{padding-top:45px}}
