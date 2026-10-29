@@ -1,5 +1,5 @@
 'use client';
-import {FormEvent, useState, useEffect} from 'react';
+import {FormEvent, useState, useEffect, useRef} from 'react';
 import styles from './book.module.css';
 
 type BookingForm={
@@ -14,16 +14,19 @@ export default function BookPage(){
  const [loading,setLoading]=useState(false);
  const [error,setError]=useState('');
  const [reference,setReference]=useState('');
+ const [notificationPending,setNotificationPending]=useState(false);
+ const requestKey=useRef<string>('');
  const change=(key:keyof BookingForm,value:string)=>setForm(p=>({...p,[key]:value}));
  async function submit(e:FormEvent<HTMLFormElement>){
    e.preventDefault();setError('');
    if(!form.checkIn||!form.checkOut||form.checkOut<=form.checkIn){setError('Select a check-out date after your check-in date.');return;}
    setLoading(true);
+   if(!requestKey.current)requestKey.current=crypto.randomUUID();
    try{
-     const response=await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form),cache:'no-store'});
+     const response=await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','X-Reservation-Request-Key':requestKey.current},body:JSON.stringify(form),cache:'no-store'});
      const data=await response.json().catch(()=>({}));
      if(!response.ok)throw new Error(typeof data.error==='string'?data.error:'Unable to submit request. Please contact the front desk.');
-     setReference(data.reference);setForm(blank);
+     setReference(data.reference);setNotificationPending(data.notification!=='sent');requestKey.current='';setForm(blank);
    }catch(err){setError(err instanceof Error?err.message:'Unable to submit request.');}
    finally{setLoading(false);}
  }
@@ -31,7 +34,7 @@ export default function BookPage(){
    <header className={styles.header}><a href="/" className={styles.brand}><img src="/crystal-inn-logo.svg" alt="" width="40" height="40"/><span>CRYSTAL INN <small>NORTHWEST 290 · HOUSTON</small></span></a><a href="/" className={styles.back}>← Back to website</a></header>
    <div className={styles.wrap}>
      <section className={styles.intro}><p className={styles.kicker}>RESERVATIONS</p><h1>Request your stay.</h1><p>Tell us when you would like to visit. Our front desk will check availability and contact you to confirm your room and rate.</p><div className={styles.warning}><strong>Request only — not a confirmed reservation.</strong> No room is held, no payment is collected, and availability is not guaranteed until the hotel contacts you.</div></section>
-     {reference?<section className={styles.card} role="status"><div className={styles.success}>✓</div><h2>Request received</h2><p>Your request reference is <strong>{reference}</strong>.</p><p>The front desk must still confirm availability and pricing. Please do not consider your stay booked until the hotel confirms it.</p><button className={styles.button} onClick={()=>setReference('')}>Send another request</button><a className={styles.link} href="/">Return to Crystal Inn</a></section>:
+     {reference?<section className={styles.card} role="status"><div className={styles.success}>✓</div><h2>Request received</h2><p>Your request reference is <strong>{reference}</strong>.</p><p>The front desk must still confirm availability and pricing. Please do not consider your stay booked until the hotel confirms it.</p>{notificationPending&&<p className={styles.warning}><strong>Your request is saved, but front-desk email delivery is not confirmed.</strong> Please call <a href="tel:+17139936567">713-993-6567</a> and provide your reference number.</p>}<button className={styles.button} onClick={()=>setReference('')}>Send another request</button><a className={styles.link} href="/">Return to Crystal Inn</a></section>:
      <form className={styles.card} onSubmit={submit}>
        <h2>Stay details</h2>
        <div className={styles.grid}>
@@ -52,7 +55,7 @@ export default function BookPage(){
        <div aria-hidden="true" className={styles.honeypot}><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={e=>change('website',e.target.value)}/></label></div>
        <p className={styles.disclaimer}>By submitting, you consent to being contacted about this stay request by phone or email. Please do not enter payment card numbers or government ID information.</p>
        {error&&<p className={styles.error} role="alert">{error}</p>}
-       <button className={styles.button} disabled={loading} type="submit">{loading?'Sending request…':'Send reservation request'}</button>
+       <button className={styles.button} disabled={loading} type="submit">{loading?'Saving request…':'Send reservation request'}</button>
        <p className={styles.fine}>Need immediate assistance? Call the hotel directly at <a href="tel:+17139936567">713-993-6567</a>.</p>
      </form>}
    </div>
