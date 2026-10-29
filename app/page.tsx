@@ -27,7 +27,7 @@ function Icon({name,size=22}:{name:IconName,size?:number}){return <svg width={si
 
 const exterior='https://www.dayuse.com/_next/image?q=75&url=https%3A%2F%2Fstatic.dayuse.com%2Fhotels%2F20739%2F499669dc8ce8206527d489d9ef890f2d-crystal-inn-northwest-290.jpg&w=3840';
 const king='https://cf.bstatic.com/xdata/images/hotel/max1024x768/791838179.jpg?k=8ff77c4d52ecb17a14b39fb001847f91c39f2e75440ccfc1f332b7897825b3bd&o=';
-const queen='https://images.trvl-media.com/lodging/119000000/118960000/118953800/118953774/2324f443.jpg?impolicy=resizecrop&ra=fill&rh=575&rw=575';
+const queen='/crystal-double-bed.svg';
 const rooms=[{title:'King Room',note:'A relaxing stay with room to unwind.',image:king,tag:'COMFORT',name:'King Non-Smoking'},{title:'Double Bed Room',note:'Two comfortable beds for family or shared stays.',image:queen,tag:'TWO BEDS',name:'No preference'},{title:'Kitchenette Options',note:'Added convenience in select accommodations.',image:king,tag:'SELECT ROOMS',name:'No preference'}];
 const amenities:[IconName,string,string][]=[['coffee','Breakfast','Start your day with our breakfast offering'],['wifi','Wi-Fi','Stay connected during your visit'],['car','Parking','Convenient on-site parking'],['clock','Front Desk','Help with your stay and arrival'],['shower','Showers','Comfortable in-room amenities'],['gift','Guest Rewards','Benefits on eligible stays']];
 function RewardsCard(){return <div className="ci-loyalty-card"><div className="ci-member-top"><img src="/crystal-inn-logo.svg" width="40" height="40" alt=""/><span>CRYSTAL INN<small>GUEST REWARDS</small></span><Icon name="spark"/></div><div className="ci-member-mid">Stay. Earn. Return.</div><div className="ci-member-bottom"><span>MEMBERSHIP BENEFITS</span><Icon name="gift"/></div></div>}
