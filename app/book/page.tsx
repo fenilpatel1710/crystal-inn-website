@@ -1,5 +1,5 @@
 'use client';
-import {FormEvent, useState} from 'react';
+import {FormEvent, useState, useEffect} from 'react';
 import styles from './book.module.css';
 
 type BookingForm={
@@ -10,6 +10,7 @@ const blank:BookingForm={checkIn:'',checkOut:'',roomType:'King Non-Smoking',room
 const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 export default function BookPage(){
  const [form,setForm]=useState<BookingForm>(blank);
+ useEffect(()=>{const params=new URLSearchParams(window.location.search);const allowed=new Set(['King Non-Smoking','King Smoking','Queen Non-Smoking','No preference']);setForm(prev=>({...prev,checkIn:/^\\d{4}-\\d{2}-\\d{2}$/.test(params.get('checkIn')||'')?params.get('checkIn')!:prev.checkIn,checkOut:/^\\d{4}-\\d{2}-\\d{2}$/.test(params.get('checkOut')||'')?params.get('checkOut')!:prev.checkOut,roomType:allowed.has(params.get('roomType')||'')?params.get('roomType')!:prev.roomType,guests:/^[1-8]$/.test(params.get('guests')||'')?params.get('guests')!:prev.guests}));},[]);
  const [loading,setLoading]=useState(false);
  const [error,setError]=useState('');
  const [reference,setReference]=useState('');
