@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "crystal-inn-website",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "crystal-inn-reservations",
+      "database_id": "4b8e238c-4b53-4b96-bc8d-13d44c444774"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "WORKER_SELF_REFERENCE",
+        "type": "service",
+        "service": "crystal-inn-website",
+        "environment": "production"
+      }
+    ]
+  }
+}
