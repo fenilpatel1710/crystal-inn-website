@@ -38,6 +38,7 @@ export async function POST(req:NextRequest){
  try{
  await a.db.batch([
   a.db.prepare('UPDATE hotels SET hero_image_url=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind('r2:'+key,hotelId),
+  a.db.prepare('UPDATE featured_hotel_placements SET image_url=NULL WHERE hotel_id=?').bind(hotelId),
   a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),a.email,'upload_private_hotel_photo',hotelId,key)
  ]);
  return NextResponse.json({ok:true,objectKey:key,imagePath:'/api/public/media?hotel='+encodeURIComponent(hotelId),message:'Photo uploaded and assigned to this hotel.'},{headers:noStore});
