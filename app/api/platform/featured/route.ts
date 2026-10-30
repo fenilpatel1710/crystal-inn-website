@@ -16,7 +16,7 @@ export async function POST(req:NextRequest){
  if(!hotelId||!dateOk(start)||!dateOk(end)||(start as string)>(end as string)||typeof order!=='number'||!Number.isInteger(order)||order<1||order>5||imageUrl.length>1000||(imageUrl&&!/^https:\/\/[^\s]+$/.test(imageUrl)))
  return NextResponse.json({error:'Choose a hotel, valid dates and a position from 1 to 5.'},{status:400,headers:noStore});
  try{
- const hotel=await a.db.prepare('SELECT id FROM hotels WHERE id=?').bind(hotelId).first();
+ const hotel=await a.db.prepare("SELECT id FROM hotels WHERE id=? AND status='active' AND archived_at IS NULL").bind(hotelId).first();
  if(!hotel)return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
  const conflicts=await a.db.prepare(`SELECT id FROM featured_hotel_placements
  WHERE NOT(end_date<? OR start_date>?) AND (display_order=? OR hotel_id=?) LIMIT 1`).bind(start as string,end as string,order,hotelId).first();
