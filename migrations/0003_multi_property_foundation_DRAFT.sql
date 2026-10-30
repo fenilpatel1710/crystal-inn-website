@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS featured_hotel_placements (
  start_date TEXT NOT NULL,
  end_date TEXT NOT NULL,
  display_order INTEGER NOT NULL CHECK(display_order BETWEEN 1 AND 5),
+ image_url TEXT,
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
  CHECK(start_date <= end_date)
 );
