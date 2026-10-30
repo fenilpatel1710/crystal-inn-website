@@ -18,6 +18,24 @@ export async function GET(req:NextRequest){
 export async function POST(req:NextRequest){
  const a=await authorize(req,'platform');if(a instanceof NextResponse)return a;
  let b:Record<string,unknown>;try{b=await req.json()}catch{return NextResponse.json({error:'Invalid JSON.'},{status:400,headers:noStore})}
+ if(b.action==='seed_northwest_room_names'){
+ const id='crystal-inn-northwest-290';
+ const verifiedNames=['King Non-Smoking','King Smoking','Queen Non-Smoking'];
+ try{
+  const hotel=await a.db.prepare('SELECT id FROM hotels WHERE id=? AND archived_at IS NULL').bind(id).first();
+  if(!hotel)return NextResponse.json({error:'Northwest 290 not found or archived.'},{status:404,headers:noStore});
+  const old=await a.db.prepare('SELECT display_name FROM hotel_room_types WHERE hotel_id=?').bind(id).all<{display_name:string}>();
+  const names=new Set(old.results.map(x=>x.display_name.trim().toLowerCase()));
+  let created=0;
+  for(const name of verifiedNames){
+   if(names.has(name.toLowerCase()))continue;
+   await a.db.prepare('INSERT INTO hotel_room_types(id,hotel_id,display_name,description,is_active) VALUES(?,?,?,?,1)').bind(crypto.randomUUID(),id,name,'').run();
+   created++;
+  }
+  await a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),a.email,'seed_verified_northwest_room_names',id,String(created)+' room names added').run();
+  return NextResponse.json({ok:true,created},{headers:noStore});
+ }catch{return NextResponse.json({error:'Unable to add Northwest 290 room names.'},{status:503,headers:noStore})}
+ }
  const x=input(b);
  if(!x.hotelId||x.hotelId.length>120||x.name.length<3||x.name.length>90||x.description.length>2000||!validImage(x.imageUrl))return NextResponse.json({error:'Enter a valid hotel, room name, description, and optional HTTPS image URL.'},{status:400,headers:noStore});
  try{
