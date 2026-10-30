@@ -1,6 +1,7 @@
 -- Apply once after a verified D1 backup. Additive only.
 ALTER TABLE hotels ADD COLUMN archived_at TEXT;
 ALTER TABLE hotel_admin_users ADD COLUMN credentials_changed_at TEXT;
+ALTER TABLE hotel_admin_users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS manager_password_reset_tokens (
  token_hash TEXT PRIMARY KEY,
  manager_id TEXT NOT NULL REFERENCES hotel_admin_users(id),
