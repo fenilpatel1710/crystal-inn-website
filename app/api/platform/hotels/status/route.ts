@@ -8,8 +8,9 @@ export async function PUT(req:NextRequest){
  if(hotelId.length>120||!['draft','active','suspended'].includes(status))
  return NextResponse.json({error:'Invalid property/status.'},{status:400,headers:noStore});
  try{
- const hotel=await a.db.prepare('SELECT id,status FROM hotels WHERE id=?').bind(hotelId).first<{id:string;status:string}>();
+ const hotel=await a.db.prepare('SELECT id,status,archived_at FROM hotels WHERE id=?').bind(hotelId).first<{id:string;status:string;archived_at:string|null}>();
  if(!hotel)return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
+ if(hotel.archived_at)return NextResponse.json({error:'Restore archived hotel before changing its status.'},{status:400,headers:noStore});
  if(status==='active'){
  const membership=await a.db.prepare(`SELECT 1 AS ok FROM hotel_admin_memberships m JOIN hotel_admin_users u ON u.id=m.admin_user_id
  WHERE m.hotel_id=? AND m.role='property_admin' AND u.status='active' LIMIT 1`).bind(hotelId).first();
