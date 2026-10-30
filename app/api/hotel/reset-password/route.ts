@@ -18,7 +18,7 @@ export async function POST(req:NextRequest){
  const claim=await e.db.prepare('UPDATE manager_password_reset_tokens SET used_at=? WHERE token_hash=? AND used_at IS NULL AND expires_at>? RETURNING manager_id').bind(now,hash,now).first<{manager_id:string}>();
  if(!claim)return NextResponse.json({error:'Reset link has already been used.'},{status:400,headers:noStore});
  await e.db.batch([
- e.db.prepare('UPDATE hotel_admin_users SET password_hash=?,credentials_changed_at=CURRENT_TIMESTAMP WHERE id=?').bind(hashed,claim.manager_id),
+ e.db.prepare('UPDATE hotel_admin_users SET password_hash=?,session_version=session_version+1,credentials_changed_at=CURRENT_TIMESTAMP WHERE id=?').bind(hashed,claim.manager_id),
  e.db.prepare('DELETE FROM manager_password_reset_tokens WHERE manager_id=?').bind(claim.manager_id)
  ]);
  return NextResponse.json({ok:true},{headers:noStore});
