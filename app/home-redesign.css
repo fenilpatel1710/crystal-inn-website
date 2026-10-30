@@ -239,3 +239,111 @@
 .ci-site .ci-rewards-section .ci-rewards-feature{padding:29px 23px}
 .ci-site .ci-contact-section .ci-bottom-grid article{padding:27px 23px}
 }
+
+
+/* 2026 hospitality refresh — refined editorial layout, property photography unchanged. */
+.ci-site{--navy:#102747;--blue:#174c9a;--blue2:#2d68b8;--pale:#f5f7fa;--text:#25384e;--muted:#63758b;--line:#e4eaf0;font-family:Arial,Helvetica,sans-serif}
+.ci-site .ci-shell{max-width:1260px;padding-left:36px;padding-right:36px}
+.ci-utility{background:#102744;color:#d9e5f6}
+.ci-utility .ci-shell{min-height:38px}
+.ci-site .ci-header{background:#fff;border-bottom:1px solid #e5eaf0;box-shadow:none}
+.ci-site .ci-navbar{min-height:88px}
+.ci-site .ci-brand{letter-spacing:2.5px;color:#112a51}
+.ci-site .ci-nav{gap:5px}
+.ci-site .ci-nav button{font-size:12px;letter-spacing:.35px;font-weight:700;padding:13px 14px}
+.ci-site .ci-nav button.ci-nav-active{color:#174c9a}
+.ci-site .ci-nav-cta{background:#183b6c;border-radius:3px;box-shadow:none;font-size:12px;text-transform:uppercase;letter-spacing:.6px;padding:17px 21px}
+.ci-site .ci-nav-cta:hover{background:#245ca4}
+.ci-site .ci-hero{min-height:655px;background-position:center 43%;position:relative}
+.ci-site .ci-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0a1b35b0,transparent 78%);pointer-events:none}
+.ci-site .ci-hero-inner{position:relative;z-index:1;padding-top:105px;padding-bottom:160px}
+.ci-site .ci-hero-copy{max-width:770px}
+.ci-site .ci-hero .ci-eyebrow{font-size:11px;font-weight:800;letter-spacing:3px;color:#e9f1ff;display:flex;align-items:center;gap:11px}
+.ci-site .ci-hero-dot{display:inline-block;width:24px;height:2px;background:#e6c6a0}
+.ci-site .ci-hero h1{font:normal clamp(55px,7vw,94px)/1.01 Georgia,serif;letter-spacing:-2.7px;margin:24px 0 23px;text-shadow:0 4px 27px #06132642}
+.ci-site .ci-hero h1 em{font-style:italic;font-weight:400;color:#fff1db}
+.ci-site .ci-hero-copy>p{font-size:17px;line-height:1.85;max-width:520px;color:#f2f5fb;font-weight:400}
+.ci-site .ci-hero-actions{gap:14px;margin-top:34px}
+.ci-site .ci-btn{border-radius:3px;min-height:52px;padding:16px 23px;font-size:12px;letter-spacing:.55px;text-transform:uppercase;box-shadow:none;transition:background .2s ease,transform .2s ease}
+.ci-site .ci-btn:hover{transform:translateY(-2px)}
+.ci-site .ci-hero .ci-btn-white{background:#fff;color:#193a64}
+.ci-site .ci-hero .ci-btn-outline{border-color:#ffffffb3;color:#fff;background:#102c490d}
+.ci-site .ci-hero-caption{color:#e4edf9;margin-top:34px}
+.ci-site .ci-booking-wrap{position:relative;z-index:4;margin-top:-74px}
+.ci-site .ci-booking-topline{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:13px 23px;background:#142e51;color:#e5edf7;border-radius:4px 4px 0 0;letter-spacing:2px;font-weight:700;font-size:10px}
+.ci-site .ci-booking-topline span:last-child{letter-spacing:.3px;font-weight:400;font-size:12px}
+.ci-site .ci-booking-widget{border:1px solid #dce4ed;border-top:0;border-radius:0 0 5px 5px;box-shadow:0 16px 55px #132e532a;padding:23px;gap:14px;background:#fff}
+.ci-site .ci-booking-widget .ci-icon-tile{background:#eff3f9;color:#214d82;box-shadow:none;border:1px solid #e0e8f2;border-radius:4px}
+.ci-site .ci-booking-widget label{border:1px solid #e1e7ef;border-radius:3px;background:#f8fafc;padding:10px 13px}
+.ci-site .ci-booking-widget label span{letter-spacing:1.2px}
+.ci-site .ci-booking-widget label input,.ci-site .ci-booking-widget label select{font-weight:600}
+.ci-site .ci-booking-widget .ci-btn-blue{background:#1c4d8b;border-radius:3px;box-shadow:none;min-height:62px}
+.ci-site .ci-booking-widget .ci-btn-blue:hover{background:#12386c}
+.ci-site .ci-experience-section{padding-top:126px;padding-bottom:110px;background:#fff;border-bottom:0}
+.ci-site .ci-experience-section:before{display:none}
+.ci-site .ci-section-label{letter-spacing:2px;font-size:10px;margin-bottom:32px}
+.ci-site .ci-section-label>span:first-child{border-radius:50%;width:38px;height:38px;box-shadow:none;background:#173f73}
+.ci-site .ci-section-head{margin-bottom:37px}
+.ci-site .ci-section-head h2{font:normal clamp(35px,4vw,55px)/1.12 Georgia,serif;max-width:660px;letter-spacing:-1.3px}
+.ci-site .ci-section-head>p{font-size:15px;line-height:1.8}
+.ci-site .ci-amenities{gap:13px}
+.ci-site .ci-amenity{border:1px solid #e4e9f0;border-radius:4px;background:#fbfcfe;box-shadow:none;padding:27px 24px;transition:transform .2s ease,border-color .2s ease}
+.ci-site .ci-amenity:hover{transform:translateY(-3px);border-color:#adc3df}
+.ci-site .ci-amenity-icon{background:#edf3fa;color:#2b5688;border-radius:50%;box-shadow:none}
+.ci-site .ci-amenity h3{color:#1e3958}
+.ci-site .ci-feature-banner{border-radius:4px;background:#173a66;box-shadow:none;padding:26px 32px}
+.ci-site .ci-feature-banner-icon{border-radius:50%;background:#ffffff1b}
+.ci-site .ci-feature-banner a{border-radius:3px}
+.ci-site .ci-rooms-section{background:#f1f4f8;padding-top:106px;padding-bottom:115px;border-top:1px solid #e5eaf0;border-bottom:1px solid #e5eaf0}
+.ci-site .ci-room-grid{gap:23px}
+.ci-site .ci-room-card{border:1px solid #e1e6ee;border-radius:4px;box-shadow:0 7px 21px #142a4a10;overflow:hidden;background:#fff}
+.ci-site .ci-rooms-section .ci-room-card{box-shadow:0 7px 21px #142a4a10}
+.ci-site .ci-rooms-section .ci-room-photo{height:270px}
+.ci-site .ci-room-photo img{object-fit:cover}
+.ci-site .ci-room-photo>span{border-radius:2px;background:#173a65;font-size:10px;letter-spacing:1px}
+.ci-site .ci-room-body{padding:26px 27px 30px}
+.ci-site .ci-room-symbol{background:#f0f4f9;border-radius:50%;color:#1e568f}
+.ci-site .ci-room-body h3{font:normal 29px/1.22 Georgia,serif}
+.ci-site .ci-room-body a{letter-spacing:.3px}
+.ci-site .ci-rewards-section{padding-top:104px;padding-bottom:112px;background:#fff}
+.ci-site .ci-rewards-section .ci-section-label>span:first-child{background:#9a4753}
+.ci-site .ci-rewards-section .ci-rewards-feature{background:linear-gradient(110deg,#102c51,#1b4b81);border-radius:5px;box-shadow:none;padding:65px 72px;min-height:430px}
+.ci-site .ci-rewards-copy h2{font:normal clamp(37px,4.1vw,55px)/1.1 Georgia,serif;color:#fff}
+.ci-site .ci-contact-section{background:#102744;padding-top:100px;padding-bottom:108px}
+.ci-site .ci-contact-section .ci-bottom-grid article{border-radius:4px;background:#193759;box-shadow:none}
+.ci-site .ci-footer{background:#091e38}
+.ci-site .ci-inner{padding-top:75px;padding-bottom:110px}
+.ci-site .ci-inner h1{letter-spacing:-1.3px}
+@media(max-width:1050px){
+ .ci-site .ci-shell{padding-left:25px;padding-right:25px}
+ .ci-site .ci-booking-widget{grid-template-columns:repeat(3,1fr)}
+ .ci-site .ci-hero{min-height:600px}
+}
+@media(max-width:780px){
+ .ci-site .ci-navbar{min-height:72px}
+ .ci-site .ci-hero{min-height:570px}
+ .ci-site .ci-hero-inner{padding-top:76px;padding-bottom:155px}
+ .ci-site .ci-nav{display:none}
+ .ci-site .ci-nav-open{display:flex}
+ .ci-site .ci-booking-widget{grid-template-columns:1fr 1fr}
+ .ci-site .ci-rooms-section .ci-room-photo{height:245px}
+ .ci-site .ci-rewards-section .ci-rewards-feature{padding:42px}
+}
+@media(max-width:570px){
+ .ci-site .ci-shell{padding-left:18px;padding-right:18px}
+ .ci-site .ci-hero{min-height:535px;background-position:58% center}
+ .ci-site .ci-hero-inner{padding-top:67px;padding-bottom:148px}
+ .ci-site .ci-hero h1{font-size:55px;letter-spacing:-1.8px}
+ .ci-site .ci-hero-copy>p{font-size:15px;line-height:1.7}
+ .ci-site .ci-booking-wrap{margin-top:-50px}
+ .ci-site .ci-booking-topline{flex-direction:column;align-items:flex-start;gap:5px;padding:12px 17px}
+ .ci-site .ci-booking-widget{grid-template-columns:1fr;padding:18px}
+ .ci-site .ci-booking-widget .ci-btn-blue{width:100%}
+ .ci-site .ci-experience-section,.ci-site .ci-rooms-section,.ci-site .ci-rewards-section,.ci-site .ci-contact-section{padding-top:75px;padding-bottom:76px}
+ .ci-site .ci-section-head h2{font-size:38px}
+ .ci-site .ci-amenities{grid-template-columns:1fr 1fr;gap:10px}
+ .ci-site .ci-amenity{padding:18px 15px}
+ .ci-site .ci-room-grid{grid-template-columns:1fr}
+ .ci-site .ci-rooms-section .ci-room-photo{height:235px}
+ .ci-site .ci-rewards-section .ci-rewards-feature{padding:29px 23px}
+}
