@@ -18,6 +18,7 @@ export async function PUT(req:NextRequest){
  }else{
   await a.db.prepare('UPDATE hotel_admin_users SET status=? WHERE id=?').bind(action==='activate'?'active':'suspended',managerId).run();
  }
+ await a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,manager_id) VALUES(?,?,?,?)').bind(crypto.randomUUID(),a.email,action+'_manager',managerId).run();
  return NextResponse.json({ok:true},{headers:noStore})
  }catch{return NextResponse.json({error:'Unable to update manager.'},{status:503,headers:noStore})}
 }
