@@ -15,9 +15,10 @@ export default function PlatformAdmin(){
   const r=await fetch(url,{...init,cache:'no-store'});const d=await r.json().catch(()=>({}));
   if(!r.ok)throw Error(d.error||'Request failed');return d;
  }
- async function refresh(){try{const [h,m,f]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured')]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setReady(true);}catch{setReady(false)}}
- useEffect(()=>{void refresh()},[]);
- async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await request('/api/platform/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});setPassword('');await refresh()}catch(e){setError(e instanceof Error?e.message:'Sign-in failed')}finally{setBusy(false)}}
+ async function refresh(){const [h,m,f]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured')]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setReady(true);}
+
+ useEffect(()=>{void refresh().catch(()=>{setReady(false)})},[]);
+ async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await request('/api/platform/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});setPassword('');await refresh()}catch(e){setError(e instanceof Error?e.message:'Sign-in failed. Check the database migration and platform configuration.')}finally{setBusy(false)}}
  async function addHotel(e:FormEvent){e.preventDefault();setBusy(true);setError('');setNotice('');try{await request('/api/platform/hotels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,slug,city,region})});setName('');setSlug('');setCity('');setNotice('Hotel created in draft mode. Configure its rooms and staff before activation.');await refresh()}catch(e){setError(e instanceof Error?e.message:'Failed')}finally{setBusy(false)}}
  async function addManager(e:FormEvent){e.preventDefault();setBusy(true);setError('');setNotice('');try{await request('/api/platform/managers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hotelId,email:managerEmail,password:managerPassword})});setManagerEmail('');setManagerPassword('');setNotice('Manager created. Share credentials through a secure channel. Hotel must be active before sign-in.');await refresh()}catch(e){setError(e instanceof Error?e.message:'Failed')}finally{setBusy(false)}}
  async function addPlacement(e:FormEvent){e.preventDefault();setBusy(true);setError('');setNotice('');
