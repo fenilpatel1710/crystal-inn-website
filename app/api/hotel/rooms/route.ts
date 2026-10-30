@@ -15,7 +15,7 @@ export async function POST(req:NextRequest){
 export async function PUT(req:NextRequest){
  const a=await authorize(req,'hotel');if(a instanceof NextResponse)return a;
  let b:Record<string,unknown>;try{b=await req.json()}catch{return NextResponse.json({error:'Invalid input'},{status:400,headers:noStore})}
- const id=String(b.id||''),name=String(b.name||'').trim(),description=String(b.description||'').trim();
+ const id=String(b.id||''),name=String(b.name||'').trim(),description=String(b.description||'').trim(),imageUrl=String(b.imageUrl||'').trim();
  if(id.length<8||name.length<3||name.length>90||description.length>2000||!imageValid(imageUrl))return NextResponse.json({error:'Invalid room details.'},{status:400,headers:noStore});
  try{
  const existing=await a.db.prepare('SELECT id FROM hotel_room_types WHERE id=? AND hotel_id=?').bind(id,a.hotelId).first();
