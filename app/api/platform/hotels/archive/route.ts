@@ -10,6 +10,7 @@ export async function PUT(req:NextRequest){
  const h=await a.db.prepare('SELECT id,display_name,status,archived_at FROM hotels WHERE id=?').bind(hotelId).first<{id:string;display_name:string;status:string;archived_at:string|null}>();
  if(!h)return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
  if(action==='archive'){
+  if(hotelId==='crystal-inn-northwest-290')return NextResponse.json({error:'Northwest 290 still uses the legacy reservation and admin system. Complete the property migration before archiving it.'},{status:409,headers:noStore});
   if(confirmation!==h.display_name)return NextResponse.json({error:'Enter the exact hotel name to confirm archival.'},{status:400,headers:noStore});
   await a.db.batch([
    a.db.prepare("UPDATE hotels SET status='suspended',archived_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=? AND archived_at IS NULL").bind(hotelId),
