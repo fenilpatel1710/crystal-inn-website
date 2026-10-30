@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS hotel_room_types (
  hotel_id TEXT NOT NULL REFERENCES hotels(id),
  display_name TEXT NOT NULL,
  description TEXT NOT NULL DEFAULT '',
+ image_url TEXT,
  lumen_room_type_id TEXT,
  is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN(0,1)),
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
