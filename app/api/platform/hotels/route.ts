@@ -3,7 +3,7 @@ import {authorize,noStore} from '../../../../lib/platform/auth';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function GET(req:NextRequest){
  const a=await authorize(req,'platform');if(a instanceof NextResponse)return a;
- try{const rows=await a.db.prepare(`SELECT h.id,h.slug,h.display_name,h.city,h.region,h.status,
+ try{const rows=await a.db.prepare(`SELECT h.id,h.slug,h.display_name,h.city,h.region,h.status,h.rewards_enabled,
   COUNT(m.admin_user_id) AS manager_count FROM hotels h LEFT JOIN hotel_admin_memberships m ON m.hotel_id=h.id
   GROUP BY h.id ORDER BY h.created_at DESC`).all();
  return NextResponse.json({hotels:rows.results},{headers:noStore})}
