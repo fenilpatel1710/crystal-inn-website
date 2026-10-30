@@ -13,7 +13,7 @@ export default function HotelDirectory({compact=false}:{compact?:boolean}){
  <div className="ci-hotel-list">{shown.map(h=><article className="ci-hotel-card" key={h.id}>
  <div className="ci-hotel-card-image">{h.hero_image_url?<img src={h.hero_image_url} alt={h.display_name}/>:h.slug==='northwest-290'?<img src={exterior} alt="Crystal Inn Northwest 290 hotel exterior"/>:<div className="ci-hotel-placeholder"><span>CRYSTAL INN</span></div>}</div>
  <div className="ci-hotel-card-content"><span className="ci-hotel-location">{h.city}, {h.region}</span><h3>{h.display_name}</h3><p>{h.description||'Discover rooms, amenities and local hospitality at this Crystal Inn location.'}</p>
- <div className="ci-hotel-card-actions"><a href={'/hotels/'+encodeURIComponent(h.slug)}>Explore hotel →</a>{h.is_legacy_booking&&<a href="/request-stay" className="ci-hotel-request">Request a stay</a>}</div></div></article>)}</div>
+ <div className="ci-hotel-card-actions"><a href={'/hotels/'+encodeURIComponent(h.slug)}>Explore hotel →</a>{h.is_legacy_booking&&<a href={"/request-stay?hotel="+encodeURIComponent(h.slug)} className="ci-hotel-request">Request a stay</a>}</div></div></article>)}</div>
  {!shown.length&&<p className="ci-hotel-empty">No hotels match your search.</p>}
  </div></section>
 }
