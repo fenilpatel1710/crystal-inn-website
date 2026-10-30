@@ -12,3 +12,12 @@
 .ci-console .ci-admin-nav button.active{background:#163e72;color:#fff;border-color:#163e72}
 .ci-console textarea{width:100%;border:1px solid #cdd9e5;border-radius:4px;background:#fff;color:#172f4c;padding:13px;font:inherit}
 .ci-console form input[readonly]{background:#f1f4f8}
+
+/* Private hotel photo upload preview */
+.ci-photo-upload-form{display:grid;gap:14px;max-width:650px}
+.ci-photo-upload-form input[type=file]{width:100%;padding:14px;border:1px dashed #9fb8d3;border-radius:7px;background:#f8fbff;color:#163657}
+.ci-photo-upload-form input[type=file]:focus-visible{outline:2px solid #205aa6;outline-offset:2px}
+.ci-photo-upload-preview{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid #d7e3f0;background:#f6f9fd;border-radius:8px;min-width:0}
+.ci-photo-upload-preview img{width:170px;height:118px;object-fit:cover;border-radius:5px;background:#e5edf5}
+.ci-photo-upload-preview>div{min-width:0;overflow-wrap:anywhere}
+@media(max-width:520px){.ci-photo-upload-preview{align-items:stretch;flex-direction:column}.ci-photo-upload-preview img{width:100%;height:180px}}
