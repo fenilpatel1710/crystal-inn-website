@@ -5,8 +5,8 @@ type Hotel={id:string;slug:string;display_name:string;city:string;region:string;
 export default function RequestStay(){
  const [hotels,setHotels]=useState<Hotel[]>([]),[hotel,setHotel]=useState(''),[loading,setLoading]=useState(true);
  const [checkIn,setCheckIn]=useState(''),[checkOut,setCheckOut]=useState(''),[guests,setGuests]=useState('2');
- useEffect(()=>{const q=new URLSearchParams(window.location.search);const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v);const inDate=q.get('checkIn')||'',outDate=q.get('checkOut')||'',count=q.get('guests')||'';
- if(validDate(inDate))setCheckIn(inDate);if(validDate(outDate))setCheckOut(outDate);if(/^[1-8]$/.test(count))setGuests(count);
+ useEffect(()=>{const q=new URLSearchParams(window.location.search);const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v);const inDate=q.get('checkIn')||'',outDate=q.get('checkOut')||'',count=q.get('guests')||'',slug=q.get('hotel')||'';
+ if(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))setHotel(slug);if(validDate(inDate))setCheckIn(inDate);if(validDate(outDate))setCheckOut(outDate);if(/^[1-8]$/.test(count))setGuests(count);
  fetch('/api/public/hotels').then(r=>r.json()).then(d=>{setHotels(Array.isArray(d.hotels)?d.hotels:[])}).catch(()=>{}).finally(()=>setLoading(false))},[]);
  const chosen=hotels.find(h=>h.slug===hotel);
  function next(e:React.FormEvent){e.preventDefault();if(!chosen||checkOut<=checkIn)return;
