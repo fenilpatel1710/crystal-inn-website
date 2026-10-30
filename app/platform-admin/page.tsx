@@ -76,7 +76,7 @@ export default function PlatformAdmin(){
  const data=new FormData();data.append('hotelId',editHotel.id);data.append('photo',selectedPhoto);
  const response=await request('/api/platform/media/upload',{method:'POST',body:data});
  setPrivateImageKey(response.objectKey);setSelectedPhoto(null);
- setNotice('Photo uploaded to private R2 and assigned as the hotel main and default featured image. If already scheduled with a custom featured URL, clear that override to use this photo.');
+ setNotice('Photo uploaded to private R2 and assigned as the hotel main and featured photo. Existing featured-photo overrides were cleared. Scheduling and hotel activation still apply.');
  await refresh();
  }catch(e){setError(e instanceof Error?e.message:'Unable to upload photo')}finally{setBusy(false)}}
  async function assignPrivateImage(e:FormEvent){e.preventDefault();if(!editHotel)return;setBusy(true);setError('');setNotice('');try{await request('/api/platform/media',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hotelId:editHotel.id,objectKey:privateImageKey})});setNotice('Private R2 photo assigned successfully. It is visible on the public site only while this hotel is active.');await refresh()}catch(e){setError(e instanceof Error?e.message:'Unable to assign R2 image')}finally{setBusy(false)}}
