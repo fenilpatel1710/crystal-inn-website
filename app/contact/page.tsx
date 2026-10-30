@@ -6,7 +6,7 @@ export default function Contact(){
  const [hotels,setHotels]=useState<Hotel[]>([]),[hotelId,setHotelId]=useState(''),[name,setName]=useState(''),[email,setEmail]=useState(''),
  [phone,setPhone]=useState(''),[subject,setSubject]=useState(''),[message,setMessage]=useState(''),[website,setWebsite]=useState(''),
  [busy,setBusy]=useState(false),[error,setError]=useState(''),[receipt,setReceipt]=useState(''),[pending,setPending]=useState(false);
- useEffect(()=>{fetch('/api/public/hotels').then(r=>r.json()).then(d=>setHotels(Array.isArray(d.hotels)?d.hotels:[])).catch(()=>{})},[]);
+ useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('hotel')||'';fetch('/api/public/hotels').then(r=>r.json()).then(d=>{const list=Array.isArray(d.hotels)?d.hotels:[];setHotels(list);if(list.some((h:Hotel)=>h.id===requested))setHotelId(requested)}).catch(()=>{})},[]);
  async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError('');
  try{const r=await fetch('/api/public/inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hotelId,name,email,phone,subject,message,website})});
  const d=await r.json();if(!r.ok)throw Error(d.error||'Unable to submit.');
