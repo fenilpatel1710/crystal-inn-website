@@ -5,7 +5,7 @@ export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function POST(req:NextRequest){
  if(!originValid(req))return NextResponse.json({error:'Invalid request origin.'},{status:403,headers:noStore});
  const raw=await req.text();if(raw.length>5000)return NextResponse.json({error:'Request too large.'},{status:413,headers:noStore});
- let b:Record<string,unknown>;try{b=JSON.parse(raw)}catch{return NextResponse.json({error:'Invalid request.'},{status:400,headers:noStore})}
+ let b:Record<string,unknown>;try{const value:unknown=JSON.parse(raw);if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid');b=value as Record<string,unknown>}catch{return NextResponse.json({error:'Invalid request.'},{status:400,headers:noStore})}
  if(String(b.website||''))return NextResponse.json({ok:true},{headers:noStore});
  const hotelId=String(b.hotelId||''),name=String(b.name||'').trim(),email=String(b.email||'').trim().toLowerCase(),
  phone=String(b.phone||'').trim(),subject=String(b.subject||'').trim(),message=String(b.message||'').trim();
