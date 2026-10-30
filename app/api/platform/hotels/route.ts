@@ -7,7 +7,17 @@ export async function GET(req:NextRequest){
   COUNT(m.admin_user_id) AS manager_count FROM hotels h LEFT JOIN hotel_admin_memberships m ON m.hotel_id=h.id
   GROUP BY h.id ORDER BY h.created_at DESC`).all();
  return NextResponse.json({hotels:rows.results},{headers:noStore})}
- catch{return NextResponse.json({error:'Multi-property schema not installed.'},{status:503,headers:noStore})}
+ catch{
+  // Preserve access to existing Super Admin controls while optional migration 0005
+  // is being installed. New operational forms stay unavailable until upgraded.
+  try{
+   const previous=await a.db.prepare(`SELECT h.id,h.slug,h.display_name,h.city,h.region,h.status,h.rewards_enabled,h.archived_at,
+   COUNT(m.admin_user_id) AS manager_count FROM hotels h LEFT JOIN hotel_admin_memberships m ON m.hotel_id=h.id
+   GROUP BY h.id ORDER BY h.created_at DESC`).all<Record<string,unknown>>();
+   return NextResponse.json({hotels:previous.results.map(h=>({...h,lumen_hotel_id:null,
+   subscription_status:'not_configured',subscription_amount_cents:0,subscription_renewal_date:null})),upgradePending:true},{headers:noStore});
+  }catch{return NextResponse.json({error:'Multi-property schema not installed.'},{status:503,headers:noStore})}
+ }
 }
 export async function POST(req:NextRequest){
  const a=await authorize(req,'platform');if(a instanceof NextResponse)return a;
