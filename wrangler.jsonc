@@ -20,6 +20,9 @@
       "database_id": "4b8e238c-4b53-4b96-bc8d-13d44c444774"
     }
   ],
+  "r2_buckets": [
+    {"binding":"HOTEL_MEDIA","bucket_name":"crystal-inn-private-media"}
+  ],
   "images": {
     "binding": "IMAGES"
   },
