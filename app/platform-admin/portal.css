@@ -6,3 +6,9 @@
 .ci-console .ci-table button:hover{background:#dfeaf7}
 @media(max-width:960px){.ci-console .ci-feature-admin{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.ci-console .ci-feature-admin{grid-template-columns:1fr}}
+
+.ci-console .ci-admin-nav{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #dae4ed;margin-bottom:24px}
+.ci-console .ci-admin-nav button{border:1px solid #cddcea;background:#fff;color:#193b61;padding:11px 15px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700}
+.ci-console .ci-admin-nav button.active{background:#163e72;color:#fff;border-color:#163e72}
+.ci-console textarea{width:100%;border:1px solid #cdd9e5;border-radius:4px;background:#fff;color:#172f4c;padding:13px;font:inherit}
+.ci-console form input[readonly]{background:#f1f4f8}
