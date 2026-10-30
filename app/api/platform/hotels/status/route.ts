@@ -16,7 +16,10 @@ export async function PUT(req:NextRequest){
  WHERE m.hotel_id=? AND m.role='property_admin' AND u.status='active' LIMIT 1`).bind(hotelId).first();
  if(!membership)return NextResponse.json({error:'Assign an active hotel administrator before activating.'},{status:400,headers:noStore});
  }
- await a.db.prepare('UPDATE hotels SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(status,hotelId).run();
+ await a.db.batch([
+ a.db.prepare('UPDATE hotels SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(status,hotelId),
+ a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),a.email,'change_hotel_status',hotelId,status)
+ ]);
  return NextResponse.json({ok:true},{headers:noStore});
  }catch{return NextResponse.json({error:'Status update failed.'},{status:503,headers:noStore})}
 }
