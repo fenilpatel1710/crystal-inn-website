@@ -4,10 +4,12 @@ import './portal.css';
 type Hotel={id:string;slug:string;display_name:string;city:string;region:string;status:string;manager_count:number;rewards_enabled:number;archived_at:string|null};
 type Placement={id:string;hotel_id:string;start_date:string;end_date:string;display_order:number;display_name:string;image_url:string|null};
 type Manager={id:string;email:string;status:string;hotel_id:string;hotel_name:string;role:string};
+type AuditEvent={id:string;actor_email:string;action:string;hotel_id:string|null;manager_id:string|null;details:string|null;created_at:string};
 export default function PlatformAdmin(){
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[ready,setReady]=useState(false);
  const [hotels,setHotels]=useState<Hotel[]>([]),[managers,setManagers]=useState<Manager[]>([]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [name,setName]=useState(''),[city,setCity]=useState(''),[region,setRegion]=useState('TX'),[slug,setSlug]=useState('');
+ const [audit,setAudit]=useState<AuditEvent[]>([]);
  const [showArchived,setShowArchived]=useState(false);
  const [placements,setPlacements]=useState<Placement[]>([]);
  const [featureHotel,setFeatureHotel]=useState(''),[featureStart,setFeatureStart]=useState(''),[featureEnd,setFeatureEnd]=useState(''),[featureOrder,setFeatureOrder]=useState('1'),[featureImage,setFeatureImage]=useState('');
@@ -16,7 +18,7 @@ export default function PlatformAdmin(){
   const r=await fetch(url,{...init,cache:'no-store'});const d=await r.json().catch(()=>({}));
   if(!r.ok)throw Error(d.error||'Request failed');return d;
  }
- async function refresh(){const [h,m,f]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured')]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setReady(true);}
+ async function refresh(){const [h,m,f,log]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured'),request('/api/platform/audit')]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setAudit(log.events);setReady(true);}
 
  useEffect(()=>{void refresh().catch(()=>{setReady(false)})},[]);
  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await request('/api/platform/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});setPassword('');await refresh()}catch(e){setError(e instanceof Error?e.message:'Sign-in failed. Check the database migration and platform configuration.')}finally{setBusy(false)}}
@@ -86,5 +88,6 @@ export default function PlatformAdmin(){
   <div className="ci-two"><section className="ci-panel"><h2>Add hotel</h2><p>New hotels start as drafts, with no guest bookings enabled.</p><form onSubmit={addHotel}><label>Hotel name<input required value={name} onChange={e=>setName(e.target.value)} placeholder="Crystal Inn – Location"/></label><label>City<input required value={city} onChange={e=>setCity(e.target.value)}/></label><label>State abbreviation<input required maxLength={2} value={region} onChange={e=>setRegion(e.target.value)}/></label><label>Website slug<input required value={slug} onChange={e=>setSlug(e.target.value)} placeholder="location-name"/></label><button disabled={busy}>Create draft hotel</button></form></section>
  <section className="ci-panel"><h2>Add hotel administrator</h2><p>Give each manager their own credentials and property assignment.</p><form onSubmit={addManager}><label>Hotel<select required value={hotelId} onChange={e=>setHotelId(e.target.value)}><option value="">Select a hotel</option>{hotels.filter(h=>!h.archived_at).map(h=><option key={h.id} value={h.id}>{h.display_name}</option>)}</select></label><label>Manager email<input type="email" required value={managerEmail} onChange={e=>setManagerEmail(e.target.value)}/></label><label>Initial password (16+ characters)<input type="password" required minLength={16} maxLength={128} value={managerPassword} onChange={e=>setManagerPassword(e.target.value)}/></label><button disabled={busy}>Create manager</button></form><p className="ci-small">Use a unique temporary password. Managers can request a secure one-time reset link from the Hotel Admin login.</p></section></div>
  <section className="ci-panel"><h2>Hotel manager access</h2><div className="ci-table"><table><thead><tr><th>Manager</th><th>Hotel</th><th>Role</th><th>Status</th><th>Access</th></tr></thead><tbody>{managers.map(m=><tr key={m.id}><td>{m.email}</td><td>{m.hotel_name}</td><td>{m.role}</td><td>{m.status}</td><td><button disabled={busy||m.status!=='active'} onClick={()=>void sendResetLink(m.id)}>Email reset link</button><button disabled={busy} onClick={()=>void changeManager(m.id,'reset_password')}>Set password manually</button>{m.status==='active'?<button disabled={busy} onClick={()=>void changeManager(m.id,'suspend')}>Suspend</button>:<button disabled={busy} onClick={()=>void changeManager(m.id,'activate')}>Activate</button>}</td></tr>)}</tbody></table></div></section>
+ <section className="ci-panel"><h2>Recent administration activity</h2><p>Most recent 100 platform management events. This log helps review access, hotel offboarding and program changes.</p><div className="ci-table"><table><thead><tr><th>Date (UTC)</th><th>Administrator</th><th>Action</th><th>Hotel</th><th>Details</th></tr></thead><tbody>{audit.map(e=><tr key={e.id}><td>{e.created_at}</td><td>{e.actor_email}</td><td>{e.action.replace(/_/g,' ')}</td><td>{hotels.find(h=>h.id===e.hotel_id)?.display_name||e.hotel_id||'—'}</td><td>{e.details||'—'}</td></tr>)}</tbody></table></div></section>
  </div>}</main>
 }
