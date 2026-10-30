@@ -12,12 +12,12 @@ export async function GET(req:NextRequest){
 export async function PUT(req:NextRequest){
  const a=await authorize(req,'hotel');if(a instanceof NextResponse)return a;
  let b:Record<string,unknown>;try{b=await req.json()}catch{return NextResponse.json({error:'Invalid input.'},{status:400,headers:noStore})}
- const description=String(b.description||'').trim(),phone=String(b.publicPhone||'').trim(),email=String(b.publicEmail||'').trim(),address=String(b.address||'').trim();
- if(description.length>1800||phone.length>32||address.length>250||email.length>190||(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
+ const description=String(b.description||'').trim(),phone=String(b.publicPhone||'').trim(),email=String(b.publicEmail||'').trim(),address=String(b.address||'').trim(),image=String(b.heroImageUrl||'').trim();
+ if(description.length>1800||phone.length>32||address.length>250||email.length>190||image.length>1000||(image&&!image.startsWith('https://'))||(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
  return NextResponse.json({error:'Invalid hotel contact information.'},{status:400,headers:noStore});
  try{
- await a.db.prepare(`UPDATE hotels SET description=?,public_phone=?,public_email=?,address_text=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`)
- .bind(description,phone||null,email||null,address||null,a.hotelId).run();
+ await a.db.prepare(`UPDATE hotels SET description=?,public_phone=?,public_email=?,address_text=?,hero_image_url=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+ .bind(description,phone||null,email||null,address||null,image||null,a.hotelId).run();
  return NextResponse.json({ok:true},{headers:noStore})
  }catch{return NextResponse.json({error:'Unable to update hotel profile.'},{status:503,headers:noStore})}
 }
