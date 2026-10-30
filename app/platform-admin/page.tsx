@@ -18,7 +18,7 @@ export default function PlatformAdmin(){
   const r=await fetch(url,{...init,cache:'no-store'});const d=await r.json().catch(()=>({}));
   if(!r.ok)throw Error(d.error||'Request failed');return d;
  }
- async function refresh(){const [h,m,f,log]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured'),request('/api/platform/audit')]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setAudit(log.events);setReady(true);}
+ async function refresh(){const [h,m,f,log]=await Promise.all([request('/api/platform/hotels'),request('/api/platform/managers'),request('/api/platform/featured'),request('/api/platform/audit').catch(()=>({events:[]}))]);setHotels(h.hotels);setManagers(m.managers);setPlacements(f.placements);setAudit(log.events);setReady(true);}
 
  useEffect(()=>{void refresh().catch(()=>{setReady(false)})},[]);
  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await request('/api/platform/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});setPassword('');await refresh()}catch(e){setError(e instanceof Error?e.message:'Sign-in failed. Check the database migration and platform configuration.')}finally{setBusy(false)}}
