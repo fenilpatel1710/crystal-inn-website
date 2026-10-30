@@ -14,11 +14,11 @@ export async function POST(req:NextRequest){
  const now=Math.floor(Date.now()/1000);
  const attempt=await e.db.prepare('SELECT window_start,failed_attempts,locked_until FROM admin_login_attempts WHERE client_key=?').bind(key).first<{window_start:number;failed_attempts:number;locked_until:number}>();
  if(attempt&&attempt.locked_until>now)return NextResponse.json({error:'Too many attempts. Try again later.'},{status:429,headers:noStore});
- const row=await e.db.prepare(`SELECT u.password_hash FROM hotel_admin_users u
+ const row=await e.db.prepare(`SELECT u.password_hash,u.session_version FROM hotel_admin_users u
  JOIN hotel_admin_memberships m ON m.admin_user_id=u.id
  JOIN hotels h ON h.id=m.hotel_id WHERE u.email=? AND u.status='active'
- AND m.hotel_id=? AND m.role='property_admin' AND h.status='active'`)
- .bind(email,hotelId).first<{password_hash:string|null}>();
+ AND m.hotel_id=? AND m.role='property_admin' AND h.status='active' AND h.archived_at IS NULL`)
+ .bind(email,hotelId).first<{password_hash:string|null;session_version:number}>();
  const hash=row?.password_hash||'',parts=hash.split(':');
  const fallback=randomBytes(16).toString('hex');
  const salt=parts.length===3&&parts[0]==='scrypt'?parts[1]:fallback;
@@ -34,7 +34,7 @@ export async function POST(req:NextRequest){
  }
  await e.db.prepare('DELETE FROM admin_login_attempts WHERE client_key=?').bind(key).run();
  const r=NextResponse.json({ok:true},{headers:noStore});
- r.cookies.set(HOTEL_COOKIE,await makeToken(e.secret,{sub:email,role:'property_admin',hotelId}),{httpOnly:true,secure:true,sameSite:'strict',maxAge:3600,path:'/'});
+ r.cookies.set(HOTEL_COOKIE,await makeToken(e.secret,{sub:email,role:'property_admin',hotelId,sessionVersion:row.session_version}),{httpOnly:true,secure:true,sameSite:'strict',maxAge:3600,path:'/'});
  return r;
  }catch{return NextResponse.json({error:'Hotel login unavailable.'},{status:503,headers:noStore})}
 }
