@@ -24,12 +24,12 @@ export async function PUT(req:NextRequest){
  (lumenId!==null&&(!Number.isSafeInteger(lumenId)||lumenId<1||lumenId>2147483647)))
  return NextResponse.json({error:'Invalid hotel information or Lumen Hotel ID.'},{status:400,headers:noStore});
  try{
- const original=await a.db.prepare('SELECT id,archived_at FROM hotels WHERE id=?').bind(id).first<{id:string;archived_at:string|null}>();
+ const original=await a.db.prepare('SELECT id,archived_at,hero_image_url FROM hotels WHERE id=?').bind(id).first<{id:string;archived_at:string|null;hero_image_url:string|null}>();
  if(!original)return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
  await a.db.batch([
  a.db.prepare(`UPDATE hotels SET display_name=?,city=?,region=?,public_phone=?,public_email=?,address_text=?,description=?,
  hero_image_url=?,lumen_hotel_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`)
- .bind(name,city,region,phone||null,email||null,address||null,description,image||null,lumenId,id),
+ .bind(name,city,region,phone||null,email||null,address||null,description,image||(original.hero_image_url?.startsWith('r2:')?original.hero_image_url:null),lumenId,id),
  a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id) VALUES(?,?,?,?)')
  .bind(crypto.randomUUID(),a.email,'edit_hotel_profile',id)
  ]);
