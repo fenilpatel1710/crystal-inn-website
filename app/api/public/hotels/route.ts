@@ -6,9 +6,9 @@ type HotelRecord={id:string;slug:string;display_name:string;city:string;region:s
 export async function GET(){
  try{
   const e=environment();if(!e.db)throw Error('No DB');
-  const rows=await e.db.prepare(`SELECT id,slug,display_name,city,region,description,public_phone,hero_image_url,rewards_enabled FROM hotels WHERE status='active' ORDER BY display_name`).all<Omit<HotelRecord,'is_legacy_booking'>>();
+  const rows=await e.db.prepare(`SELECT id,slug,display_name,city,region,description,public_phone,hero_image_url,rewards_enabled FROM hotels WHERE status='active' AND archived_at IS NULL ORDER BY display_name`).all<Omit<HotelRecord,'is_legacy_booking'>>();
   const hotels:HotelRecord[]=rows.results.map(h=>({...h,is_legacy_booking:h.slug==='northwest-290'}));
-  if(!hotels.some(h=>h.slug==='northwest-290'))hotels.unshift(nw);
+  // Legacy fallback is only for a missing multi-property schema, never for a suspended/archived property.
   return NextResponse.json({hotels},{headers:noStore});
  }catch{return NextResponse.json({hotels:[nw],setupPending:true},{headers:noStore})}
 }
