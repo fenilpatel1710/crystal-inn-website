@@ -387,3 +387,37 @@
 .ci-guest-next a{color:#205b98;font-weight:700;text-decoration:none}
 @media(max-width:780px){.ci-hotel-list{grid-template-columns:1fr}.ci-property-rooms{grid-template-columns:1fr 1fr}}
 @media(max-width:570px){.ci-hotels{padding:73px 0}.ci-hotel-card-image{height:230px}.ci-hotel-card-content{padding:22px}.ci-property-hero{min-height:420px}.ci-property-hero>.ci-shell{padding-top:65px;padding-bottom:70px}.ci-property-rooms{grid-template-columns:1fr}.ci-guest-select{padding:22px 18px}}
+
+/* Multi-location merchandising and request-first UI */
+.ci-site .ci-featured-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:23px}
+.ci-site .ci-featured-grid .ci-hotel-card-image{height:245px}
+.ci-site .ci-featured-grid .ci-hotel-card-content{padding:24px}
+.ci-site .ci-featured-grid .ci-hotel-card h3{font-size:27px}
+.ci-site .ci-featured-empty{border:1px solid #d9e3ee;background:#fff;padding:34px 37px;color:#4b6078}
+.ci-site .ci-featured-empty a{color:#1e4e88;font-weight:800}
+.ci-site .ci-location-links{display:flex;flex-direction:column;align-items:flex-start;gap:11px;margin-top:24px}
+.ci-site .ci-location-links a{display:flex;align-items:center;gap:9px;max-width:100%;overflow-wrap:anywhere;line-height:1.55}
+.ci-site .ci-panel-reward{padding:33px 37px;background:#f5f8fc;border:1px solid #dfe7f1;margin:37px 0 45px}
+.ci-site .ci-panel-reward h2{font:normal 30px Georgia,serif;color:#183a60;margin:10px 0 16px}
+.ci-site .ci-panel-reward p{line-height:1.85;color:#566b80}
+.ci-site .ci-participating{display:flex;gap:12px;flex-wrap:wrap}
+.ci-site .ci-participating a{padding:12px 17px;border:1px solid #d7e3ef;background:#fff;color:#1b4f85;text-decoration:none;font-weight:700;border-radius:3px}
+.ci-site .ci-choose-hotel{min-height:75vh}
+.ci-site .ci-choose-hotel h1{font:normal clamp(42px,5vw,67px)/1.1 Georgia,serif;max-width:800px;color:#163b64}
+.ci-site .ci-select-form{max-width:830px;padding:32px;background:#fff;border:1px solid #dce5ef;box-shadow:0 10px 35px #183e7016;margin:30px 0}
+.ci-site .ci-select-form label{display:flex;flex-direction:column;gap:9px;font-size:11px;font-weight:800;letter-spacing:1.1px;color:#4b6682}
+.ci-site .ci-select-form select,.ci-site .ci-select-form input{background:#f9fbfe;border:1px solid #cbd9e8;border-radius:4px;min-height:49px;padding:10px 12px;font-size:14px;color:#203e5f;letter-spacing:0}
+.ci-site .ci-select-form .ci-date-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:25px 0}
+.ci-site .ci-selected-property{background:#f4f7fb;border-left:4px solid #1c568f;padding:17px 22px;margin-top:24px}
+.ci-site .ci-selected-property strong{color:#183e6b}
+.ci-site .ci-selected-property p{font-size:13px;margin:8px 0 0;color:#60758a;line-height:1.6}
+.ci-site .ci-select-form .ci-btn{margin-top:22px}
+@media(max-width:920px){.ci-site .ci-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+.ci-site .ci-featured-grid{grid-template-columns:1fr}
+.ci-site .ci-featured-grid .ci-hotel-card-image{height:220px}
+.ci-site .ci-select-form{padding:22px 17px}
+.ci-site .ci-select-form .ci-date-fields{grid-template-columns:1fr}
+.ci-site .ci-panel-reward{padding:23px}
+.ci-site .ci-contact-section .ci-location-links a{width:auto}
+}
