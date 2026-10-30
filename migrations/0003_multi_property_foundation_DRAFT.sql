@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS hotels (
  timezone TEXT NOT NULL DEFAULT 'America/Chicago',
  public_phone TEXT,
  address_text TEXT,
+ description TEXT NOT NULL DEFAULT '',
+ hero_image_url TEXT,
+ public_email TEXT,
  status TEXT NOT NULL DEFAULT 'draft'
   CHECK(status IN ('draft','active','suspended')),
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
