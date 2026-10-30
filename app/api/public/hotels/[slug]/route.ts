@@ -1,7 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {environment,noStore} from '../../../../../lib/platform/auth';
 export const runtime='nodejs';export const dynamic='force-dynamic';
-const nw={id:'crystal-inn-northwest-290',slug:'northwest-290',display_name:'Crystal Inn Northwest 290',city:'Houston',region:'TX',description:'Enjoy comfortable rooms and friendly service in Northwest Houston.',public_phone:'713-993-6567',hero_image_url:null,is_legacy_booking:true};
 export async function GET(_req:NextRequest,{params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length>64)return NextResponse.json({error:'Not found'},{status:404,headers:noStore});
@@ -13,7 +12,5 @@ export async function GET(_req:NextRequest,{params}:{params:Promise<{slug:string
  return NextResponse.json({hotel:{...hotel,is_legacy_booking:slug==='northwest-290'},rooms:rooms.results},{headers:noStore});
  }
  }catch{return NextResponse.json({error:'Hotel directory temporarily unavailable.'},{status:503,headers:noStore})}
- /* A suspended or archived hotel must never be publicly returned via the legacy fallback. */
- if(false&&slug==='northwest-290')return NextResponse.json({hotel:nw,rooms:[],setupPending:true},{headers:noStore});
  return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
 }
