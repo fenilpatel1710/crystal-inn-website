@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS hotels (
  description TEXT NOT NULL DEFAULT '',
  hero_image_url TEXT,
  public_email TEXT,
+ rewards_enabled INTEGER NOT NULL DEFAULT 0 CHECK(rewards_enabled IN (0,1)),
  status TEXT NOT NULL DEFAULT 'draft'
   CHECK(status IN ('draft','active','suspended')),
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -118,6 +119,19 @@ CREATE TABLE IF NOT EXISTS hotel_integration_configs (
  integration_status TEXT NOT NULL DEFAULT 'not_configured',
  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Featured placements are centrally managed, never selected by individual hotel managers.
+-- Date ranges are inclusive and evaluated in the platform's Central time zone.
+CREATE TABLE IF NOT EXISTS featured_hotel_placements (
+ id TEXT PRIMARY KEY,
+ hotel_id TEXT NOT NULL REFERENCES hotels(id),
+ start_date TEXT NOT NULL,
+ end_date TEXT NOT NULL,
+ display_order INTEGER NOT NULL CHECK(display_order BETWEEN 1 AND 5),
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ CHECK(start_date <= end_date)
+);
+CREATE INDEX IF NOT EXISTS ix_featured_placement_date ON featured_hotel_placements(start_date,end_date,display_order);
 
 -- A real hotel list requires approval; only the existing property is seeded.
 INSERT OR IGNORE INTO hotels(id,slug,display_name,city,region,timezone,public_phone,status)
