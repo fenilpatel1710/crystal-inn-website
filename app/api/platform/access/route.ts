@@ -14,7 +14,7 @@ export async function PUT(req:NextRequest){
  if(action==='reset_password'){
   if(password.length<16||password.length>128)return NextResponse.json({error:'Password must contain 16–128 characters.'},{status:400,headers:noStore});
   const salt=randomBytes(16).toString('hex'),hashed='scrypt:'+salt+':'+scryptSync(password,salt,64).toString('hex');
-  await a.db.prepare('UPDATE hotel_admin_users SET password_hash=? WHERE id=?').bind(hashed,managerId).run();
+  await a.db.prepare('UPDATE hotel_admin_users SET password_hash=?,credentials_changed_at=CURRENT_TIMESTAMP WHERE id=?').bind(hashed,managerId).run();
  }else{
   await a.db.prepare('UPDATE hotel_admin_users SET status=? WHERE id=?').bind(action==='activate'?'active':'suspended',managerId).run();
  }
