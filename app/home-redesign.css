@@ -437,3 +437,89 @@
 .ci-hotel-suggestions-empty{margin:0;padding:14px;color:#657789;font-size:13px}
 .ci-hotel-placeholder{flex-direction:column;gap:10px;text-align:center}
 .ci-hotel-placeholder small{font:normal 12px Arial,sans-serif;letter-spacing:.5px;color:#dbeaf9}
+
+
+/* Individual Crystal Inn property detail */
+.ci-property-page{background:#fff;color:#123153}
+.ci-property-utility{background:#102f55;color:#dce9fa;font-size:10px;font-weight:800;letter-spacing:1.5px}
+.ci-property-utility>.ci-shell{display:flex;justify-content:space-between;gap:16px;padding-top:11px;padding-bottom:11px}
+.ci-property-utility a{color:#fff;text-decoration:none;letter-spacing:.2px}
+.ci-property-topnav{display:flex;align-items:center;gap:26px;font-size:13px;font-weight:700}
+.ci-property-topnav a{color:#183958;text-decoration:none}
+.ci-property-topnav a:hover,.ci-property-text-link:hover{text-decoration:underline}
+.ci-property-topnav .ci-property-nav-cta{background:#184c88;color:white;padding:14px 19px;border-radius:3px}
+.ci-property-loading{padding-top:110px;padding-bottom:150px;min-height:65vh}
+.ci-property-loading h1{font:normal clamp(35px,5vw,64px) Georgia,serif}
+.ci-property-loading>p{color:#5e7691;line-height:1.8;margin-bottom:24px}
+.ci-property-breadcrumb{display:flex;align-items:center;gap:13px;padding-top:24px;padding-bottom:24px;font-size:12px;color:#71839b;flex-wrap:wrap}
+.ci-property-breadcrumb a{color:#315b87;text-decoration:none}
+.ci-property-breadcrumb strong{font-weight:600;color:#183958}
+.ci-property-intro{padding:14px 0 75px;background:linear-gradient(#fff 78%,#f3f6fa 78%)}
+.ci-property-intro-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;gap:6%}
+.ci-property-intro-copy{padding:24px 0 45px}
+.ci-property-intro-copy h1{font:normal clamp(44px,5.2vw,79px)/1.08 Georgia,serif;letter-spacing:-1.4px;max-width:590px;margin:25px 0;color:#0b2b50}
+.ci-property-lead{font-size:17px;line-height:1.85;color:#62758b;max-width:510px}
+.ci-property-action-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:33px}
+.ci-property-outline-link{font-size:13px;font-weight:800;color:#1c4e84;text-decoration:none}
+.ci-property-intro-facts{display:flex;gap:18px;flex-wrap:wrap;margin-top:48px;font-size:12px;color:#5e728a}
+.ci-property-photo-main{height:480px;position:relative;overflow:hidden;background:#e8eef5;box-shadow:0 18px 38px #15375618}
+.ci-property-photo-main>img{width:100%;height:100%;display:block;object-fit:cover}
+.ci-property-photo-label{position:absolute;bottom:0;left:0;right:0;color:#fff;background:linear-gradient(transparent,#112d4fc9);padding:55px 25px 23px;font-size:10px;letter-spacing:1.6px;font-weight:800;pointer-events:none}
+.ci-property-photo-expand{position:absolute;right:17px;top:17px;background:#fffffff2;color:#15395e;border:0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:800;border-radius:4px}
+.ci-property-image-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;gap:13px;background:linear-gradient(135deg,#153b67,#487eaa);color:white;text-align:center}
+.ci-property-image-placeholder span{font:normal 28px Georgia,serif;letter-spacing:4px}
+.ci-property-image-placeholder small{font-size:12px;letter-spacing:.6px;color:#dcecf9}
+.ci-property-quickbar{border-bottom:1px solid #e2e8f0;background:#f9fbfd}
+.ci-property-quickbar>.ci-shell{display:flex;gap:37px;flex-wrap:wrap}
+.ci-property-quickbar a{padding:21px 0;text-decoration:none;color:#31516e;font-size:13px;font-weight:800}
+.ci-property-quickbar a:hover{color:#1a61a7}
+.ci-property-section{padding:110px 0;scroll-margin-top:20px}
+.ci-property-about{display:grid;grid-template-columns:1fr 1fr;gap:12%}
+.ci-property-page .ci-property-section h2,.ci-property-bottom-cta h2{font:normal clamp(38px,4.4vw,61px)/1.14 Georgia,serif;color:#0d3055;margin:20px 0 25px}
+.ci-property-page .ci-property-section h2 em{font-weight:normal;color:#346b9c}
+.ci-property-about>div:last-child{padding-top:45px}
+.ci-property-about>div:last-child p{font-size:17px;line-height:1.9;color:#536d86}
+.ci-property-about .ci-property-muted,.ci-property-muted{font-size:13px!important;color:#7d8da0!important;line-height:1.8!important}
+.ci-property-text-link{color:#205c9b;font-weight:800;text-decoration:none;font-size:13px}
+.ci-property-rooms-section{background:#f3f6fa}
+.ci-property-section-heading{display:flex;align-items:end;justify-content:space-between;gap:32px;margin-bottom:34px}
+.ci-property-section-heading>p{max-width:370px;line-height:1.8;color:#647b91;font-size:14px}
+.ci-property-room-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.ci-property-room-card{background:white;border:1px solid #dde5ee;box-shadow:0 7px 19px #102b4510;min-width:0}
+.ci-property-room-image{height:235px;position:relative;overflow:hidden;background:#e7edf5}
+.ci-property-room-image>img{height:100%;width:100%;object-fit:cover}
+.ci-property-room-image button{position:absolute;right:12px;bottom:12px;border:0;background:#fff;padding:9px 13px;border-radius:3px;cursor:pointer;font-size:12px;color:#204c79;font-weight:800}
+.ci-property-room-info{padding:27px}
+.ci-property-card-kicker{font-size:10px;letter-spacing:1.6px;font-weight:800;color:#316da7}
+.ci-property-room-info h3,.ci-property-contact-cards h3,.ci-property-no-rooms h3{font:normal 28px/1.25 Georgia,serif;margin:13px 0;color:#123457}
+.ci-property-room-info p{color:#63768b;line-height:1.8;font-size:14px;min-height:76px}
+.ci-property-room-info a,.ci-property-contact-cards a{color:#19558f;font-weight:800;text-decoration:none;font-size:13px}
+.ci-property-no-rooms{background:#fff;border:1px solid #dce6f0;padding:48px;max-width:790px}
+.ci-property-no-rooms p{max-width:570px;line-height:1.8;color:#5a718a;margin-bottom:28px}
+.ci-property-booking-section{background:#fff}
+.ci-property-booking-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10%;align-items:start}
+.ci-property-booking-grid>div:first-child>p:not(.ci-eyebrow){color:#5d7189;line-height:1.85;font-size:15px}
+.ci-property-booking-card{background:#f6f9fd;border:1px solid #d7e2ed;padding:36px;box-shadow:0 14px 35px #173b5f12}
+.ci-property-booking-card h3{font:normal 29px Georgia,serif;margin:12px 0 27px}
+.ci-property-booking-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ci-property-booking-fields label{font-size:10px;letter-spacing:1.1px;font-weight:800;color:#3b5977;display:flex;flex-direction:column;gap:9px}
+.ci-property-booking-fields label:last-child{grid-column:span 2}
+.ci-property-booking-fields input,.ci-property-booking-fields select{max-width:100%;min-width:0;padding:13px 12px;border:1px solid #c6d5e5;background:#fff;color:#173c5e;font-size:15px;border-radius:3px;letter-spacing:0}
+.ci-property-booking-submit{display:flex!important;justify-content:center;margin-top:22px;text-align:center;text-decoration:none}
+.ci-property-booking-card>p:last-child{font-size:12px;text-align:center;color:#778aa0;margin-top:16px}
+.ci-property-location-section{background:#f3f6fa}
+.ci-property-contact-cards{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.ci-property-contact-cards article{background:#fff;border:1px solid #dee7f0;padding:35px;min-height:250px}
+.ci-property-contact-cards p{color:#587188;line-height:1.8;font-size:14px}
+.ci-property-contact-cards article>a{display:inline-block;margin-top:10px}
+.ci-property-bottom-cta{background:#0d3159;color:#e7f1fd;padding:72px 0}
+.ci-property-bottom-cta>.ci-shell{display:flex;align-items:center;justify-content:space-between;gap:32px}
+.ci-property-bottom-cta h2{color:white;margin:13px 0}
+.ci-property-bottom-cta p:not(.ci-eyebrow){color:#c0d5eb}
+.ci-property-bottom-cta .ci-btn{flex-shrink:0;text-decoration:none}
+.ci-property-lightbox{position:fixed;inset:0;z-index:250;background:#071a2ef2;display:flex;align-items:center;justify-content:center;padding:45px}
+.ci-property-lightbox img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 10px 40px #0006}
+.ci-property-lightbox-close{position:absolute;right:24px;top:16px;font-size:36px;color:#fff;background:none;border:0;cursor:pointer}
+@media(max-width:950px){.ci-property-intro-layout{gap:4%}.ci-property-photo-main{height:390px}.ci-property-room-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ci-property-booking-grid{gap:5%}}
+@media(max-width:720px){.ci-property-topnav{gap:12px}.ci-property-topnav>a:not(.ci-property-nav-cta){display:none}.ci-property-intro-layout,.ci-property-about,.ci-property-booking-grid{grid-template-columns:1fr}.ci-property-intro{padding-bottom:40px}.ci-property-intro-copy{padding-bottom:18px}.ci-property-intro-copy h1{font-size:48px}.ci-property-photo-main{height:340px}.ci-property-intro-facts{margin-top:25px}.ci-property-about>div:last-child{padding-top:0}.ci-property-section{padding:65px 0}.ci-property-section-heading{flex-direction:column;align-items:start}.ci-property-room-grid{grid-template-columns:1fr}.ci-property-contact-cards{grid-template-columns:1fr}.ci-property-booking-card{padding:23px}.ci-property-bottom-cta>.ci-shell{align-items:start;flex-direction:column}.ci-property-quickbar>.ci-shell{gap:20px}.ci-property-quickbar a{font-size:12px;padding:15px 0}}
+@media(max-width:420px){.ci-property-utility>.ci-shell{flex-direction:column;gap:6px}.ci-property-intro-copy h1{font-size:40px}.ci-property-photo-main{height:265px}.ci-property-booking-fields{grid-template-columns:1fr}.ci-property-booking-fields label:last-child{grid-column:auto}.ci-property-contact-cards article{padding:24px}.ci-property-no-rooms{padding:26px}.ci-property-lightbox{padding:15px}}
