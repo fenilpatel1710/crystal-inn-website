@@ -3,8 +3,8 @@ import {useEffect,useState} from 'react';
 type Hotel={id:string;slug:string;display_name:string;city:string;region:string;description:string;hero_image_url:string|null;public_phone?:string;is_legacy_booking?:boolean};
 const exterior='https://www.dayuse.com/_next/image?q=75&url=https%3A%2F%2Fstatic.dayuse.com%2Fhotels%2F20739%2F499669dc8ce8206527d489d9ef890f2d-crystal-inn-northwest-290.jpg&w=3840';
 export default function HotelDirectory({compact=false}:{compact?:boolean}){
- const [hotels,setHotels]=useState<Hotel[]>([]),[query,setQuery]=useState('');
- useEffect(()=>{fetch('/api/public/hotels').then(r=>r.json()).then(d=>setHotels(Array.isArray(d.hotels)?d.hotels:[])).catch(()=>{})},[]);
+ const [hotels,setHotels]=useState<Hotel[]>([]),[query,setQuery]=useState(''),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState('');
+ useEffect(()=>{fetch('/api/public/hotels',{cache:'no-store'}).then(async r=>{const d=await r.json();if(!r.ok||d.setupPending)throw Error('Hotel listings are temporarily unavailable. Please contact guest services.');setHotels(Array.isArray(d.hotels)?d.hotels:[])}).catch(e=>setLoadError(e instanceof Error?e.message:'Unable to load locations.')).finally(()=>setLoading(false))},[]);
  const shown=hotels.filter(h=>(h.display_name+' '+h.city+' '+h.region).toLowerCase().includes(query.trim().toLowerCase()));
  return <section className={compact?'ci-hotels ci-hotels-compact':'ci-hotels'} id="find-hotels"><div className="ci-shell">
  <div className="ci-section-label"><span>01</span> OUR LOCATIONS <span className="ci-section-rule"/></div>
@@ -14,6 +14,6 @@ export default function HotelDirectory({compact=false}:{compact?:boolean}){
  <div className="ci-hotel-card-image">{h.hero_image_url?<img src={h.hero_image_url} alt={h.display_name}/>:h.slug==='northwest-290'?<img src={exterior} alt="Crystal Inn Northwest 290 hotel exterior"/>:<div className="ci-hotel-placeholder"><span>CRYSTAL INN</span></div>}</div>
  <div className="ci-hotel-card-content"><span className="ci-hotel-location">{h.city}, {h.region}</span><h3>{h.display_name}</h3><p>{h.description||'Discover rooms, amenities and local hospitality at this Crystal Inn location.'}</p>
  <div className="ci-hotel-card-actions"><a href={'/hotels/'+encodeURIComponent(h.slug)}>Explore hotel →</a>{h.is_legacy_booking&&<a href={"/request-stay?hotel="+encodeURIComponent(h.slug)} className="ci-hotel-request">Request a stay</a>}</div></div></article>)}</div>
- {!shown.length&&<p className="ci-hotel-empty">No hotels match your search.</p>}
+ {loading?<p className="ci-hotel-empty">Loading Crystal Inn locations…</p>:loadError?<p role="alert" className="ci-hotel-empty">{loadError} <a href="/contact">Contact guest services</a></p>:hotels.length===0?<p className="ci-hotel-empty">No Crystal Inn locations are currently published. Please check back or <a href="/contact">contact guest services</a>.</p>:!shown.length?<p className="ci-hotel-empty">No hotels match “{query}”. <button type="button" onClick={()=>setQuery('')} style={{border:0,background:'transparent',textDecoration:'underline',color:'#184aaf',cursor:'pointer'}}>Clear search</button></p>:null}
  </div></section>
 }
