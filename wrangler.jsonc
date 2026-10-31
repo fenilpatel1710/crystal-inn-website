@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "crystal-inn-website",
+  "keep_vars": true,
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-23",
   "compatibility_flags": [
