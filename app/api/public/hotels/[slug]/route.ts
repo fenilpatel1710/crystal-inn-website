@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {environment,noStore} from '../../../../../lib/platform/auth';
+import {mergedFeatures} from '../../../../../lib/hotel-features';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function GET(_req:NextRequest,{params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
@@ -17,7 +18,8 @@ export async function GET(_req:NextRequest,{params}:{params:Promise<{slug:string
  JOIN hotel_room_types r ON r.id=p.room_id AND r.hotel_id=p.hotel_id AND r.is_active=1
  WHERE p.hotel_id=? ORDER BY p.room_id,p.slot`).bind(hotel.id as string).all<PhotoRow>().catch(()=>({results:[] as PhotoRow[]}));
  const listedRooms=rooms.results.map(room=>({...room,photos:gallery.results.filter(photo=>photo.room_id===room.id).map(photo=>({id:photo.id,slot:photo.slot,url:'/api/public/media/room?'+new URLSearchParams({room:room.id,photo:photo.id}).toString()}))}));
- return NextResponse.json({hotel:{...hotel,hero_image_url:typeof hotel.hero_image_url==='string'&&hotel.hero_image_url.startsWith('r2:')?'/api/public/media?hotel='+encodeURIComponent(hotel.id as string):hotel.hero_image_url,is_legacy_booking:slug==='northwest-290'},rooms:listedRooms},{headers:noStore});
+ const features=await e.db.prepare('SELECT feature_key,enabled FROM hotel_features WHERE hotel_id=?').bind(hotel.id as string).all<{feature_key:string;enabled:number}>().catch(()=>({results:[] as {feature_key:string;enabled:number}[]}));
+ return NextResponse.json({hotel:{...hotel,hero_image_url:typeof hotel.hero_image_url==='string'&&hotel.hero_image_url.startsWith('r2:')?'/api/public/media?hotel='+encodeURIComponent(hotel.id as string):hotel.hero_image_url,is_legacy_booking:slug==='northwest-290',features:mergedFeatures(features.results,Number(hotel.rewards_enabled)||0)},rooms:listedRooms},{headers:noStore});
  }
  }catch{return NextResponse.json({error:'Hotel directory temporarily unavailable.'},{status:503,headers:noStore})}
  return NextResponse.json({error:'Hotel not found.'},{status:404,headers:noStore});
