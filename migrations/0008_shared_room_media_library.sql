@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS hotel_media_assets (
   id TEXT PRIMARY KEY,
   hotel_id TEXT NOT NULL REFERENCES hotels(id) ON DELETE CASCADE,
   object_key TEXT NOT NULL UNIQUE,
-  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'deleting')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('uploading', 'active', 'deleting')),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(id, hotel_id)
 );
