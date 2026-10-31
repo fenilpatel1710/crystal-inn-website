@@ -66,3 +66,7 @@
 .ci-photo-library-item button{border:0;border-radius:5px;background:#1e5d9e;color:white;padding:11px 9px;font-size:12px;font-weight:800;cursor:pointer}
 .ci-photo-library-item button:disabled{background:#dfe7ef;color:#667c90;cursor:not-allowed}
 @media(max-width:570px){.ci-photo-library{padding:13px}.ci-photo-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ci-photo-library-item img{height:115px}}
+
+.ci-photo-library-item .ci-photo-library-delete{background:#fff;color:#9e2432;border:1px solid #bb5660}
+.ci-photo-library-item .ci-photo-library-delete:hover:not(:disabled){background:#fff0f1}
+.ci-photo-library-item .ci-photo-library-delete:disabled{background:#f3f5f8;color:#87919c;border-color:#d9e0e8}
