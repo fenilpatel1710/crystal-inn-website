@@ -10,6 +10,7 @@ import {authenticateLumenPilot,lumenPilotConfigurationState,LumenCookieAuthError
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function GET(req:NextRequest){
  const a=await authorize(req,'hotel');if(a instanceof NextResponse)return a;
+ if(!a.hotelId)return NextResponse.json({error:'Hotel session required.'},{status:403,headers:noStore});
  return NextResponse.json({
   hotelId:a.hotelId,...lumenPilotConfigurationState(a.hotelId),
   connectionVerified:false,databaseScopeVerified:false,
@@ -18,6 +19,7 @@ export async function GET(req:NextRequest){
 }
 export async function POST(req:NextRequest){
  const a=await authorize(req,'hotel');if(a instanceof NextResponse)return a;
+ if(!a.hotelId)return NextResponse.json({error:'Hotel session required.'},{status:403,headers:noStore});
  if(a.hotelId!=='crystal-inn-northwest-290')return NextResponse.json({error:'No approved integration pilot for this hotel.'},{status:403,headers:noStore});
  const state=lumenPilotConfigurationState(a.hotelId);
  if(!state.enabled||!state.configured)return NextResponse.json({error:'Lumen authentication test not enabled or configured by the developer.'},{status:503,headers:noStore});
