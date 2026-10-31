@@ -70,3 +70,5 @@
 .ci-photo-library-item .ci-photo-library-delete{background:#fff;color:#9e2432;border:1px solid #bb5660}
 .ci-photo-library-item .ci-photo-library-delete:hover:not(:disabled){background:#fff0f1}
 .ci-photo-library-item .ci-photo-library-delete:disabled{background:#f3f5f8;color:#87919c;border-color:#d9e0e8}
+
+.ci-photo-library-pending{display:grid;place-items:center;height:145px;background:#f3f4f6;color:#a13c47;font-weight:800;font-size:12px}
