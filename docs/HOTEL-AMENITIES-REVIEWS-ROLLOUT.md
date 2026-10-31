@@ -20,7 +20,7 @@
    ```
    Expect three table rows.
 5. Configure each property in Hotel Admin → Amenities & Google; defaults are deliberately off rather than assumed.
-6. Optional for live Google ratings: create a Google Cloud project with **Places API (New)** and billing, restrict the server-side key to that API, and set Cloudflare Worker **secret** `GOOGLE_PLACES_API_KEY`. Never place this key in D1, source control or the browser. Supply each property's official Google Place ID. The API requests `rating,userRatingCount,googleMapsLinks` and can have per-view Google billing charges; monitor quotas.
+6. Optional for live Google ratings: create a Google Cloud project with **Places API (New)** and billing, restrict the server-side key to that API, and set Cloudflare Worker **secret** `GOOGLE_PLACES_API_KEY`. Never place this key in D1, source control or the browser. Supply each property's official Google Place ID. The API requests `rating,userRatingCount,googleMapsLinks,reviews` (up to five Google-authored reviews, with author attribution and original-review links). The `reviews` field can trigger a higher-billed Places SKU; monitor API quotas and costs. Google Maps attribution and author/source links must remain visible.
 7. For the Google review button without the API key, provide the hotel's real Google write-review URL in Hotel Admin. Do not use a generic search link as a substitute for a write-review URL.
 8. Test with two separate active hotels: enable only breakfast/Wi-Fi at Hotel A, only parking at Hotel B, confirm directory and property differences; sign in to A by SMS and submit a review; confirm the review appears only at A, and posting to B returns 403; hide A review via A's Hotel Admin and check it no longer appears publicly. Verify B's Hotel Admin cannot moderate A reviews.
 9. Validate Google rating attribution and official outbound links. Follow Google Maps Platform terms, Places API attributions, billing and privacy requirements.
@@ -30,4 +30,4 @@
 - First-party guest reviews confirm phone-account ownership, not a physical stay; a future verified-stay badge requires an approved hotel-scoped Lumen booking/guest link.
 - Google ratings are a premium Google Places API field. Without a billed Places API key and Place ID, the page says rating unavailable, not a fabricated number.
 - The public directory only shows the four prominent features by default; the property detail page lists all thirteen.
-- The Google Places endpoint is queried on the hotel's reviews tab; implement appropriate quota protection/monitoring for high traffic while complying with Google's Places API caching policies.
+- The Google Places endpoint is queried on the hotel's reviews tab; configure strict Google Cloud quotas and billing alerts before enabling API access for production traffic, and respect Google's Places API caching policies. Displaying Google-sourced reviews also requires the proper attributions and Google privacy/terms notices.
