@@ -49,3 +49,26 @@
 .ci-room-photo-selection p{font-size:12px;color:#6c8299}
 @media(max-width:620px){.ci-room-photo-manager{padding:17px}.ci-room-photo-grid{grid-template-columns:1fr 1fr}.ci-room-photo-tile img{height:130px}}
 @media(max-width:440px){.ci-room-photo-grid{grid-template-columns:1fr}.ci-room-photo-selection{flex-direction:column;align-items:stretch}.ci-room-photo-selection img{width:100%;height:140px}}
+
+
+/* Shared hotel photo library: available in both Super Admin and Hotel Admin. */
+.ci-room-photo-source-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 17px}
+.ci-room-photo-source-tabs button{border:1px solid #c8d8ea;background:#f6f9fd;color:#1a416e;border-radius:6px;padding:12px 18px;font-weight:800;font-size:13px;cursor:pointer}
+.ci-room-photo-source-tabs button.active{background:#183f70;border-color:#183f70;color:#fff}
+.ci-photo-library{border:1px solid #d7e3f0;border-radius:8px;background:#f8fbff;padding:20px}
+.ci-photo-library-title{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:17px;color:#15385e}
+.ci-photo-library-title button{background:white;color:#174579;border:1px solid #bfcfe0;padding:9px 13px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:700}
+.ci-photo-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:15px}
+.ci-photo-library-item{min-width:0;overflow:hidden;background:#fff;border:1px solid #d2e0ee;border-radius:7px}
+.ci-photo-library-item img{display:block;width:100%;height:145px;object-fit:cover}
+.ci-photo-library-item>div{padding:12px;display:flex;flex-direction:column;gap:10px}
+.ci-photo-library-item small{color:#5a7490;font-size:11px}
+.ci-photo-library-item button{border:0;border-radius:5px;background:#1e5d9e;color:white;padding:11px 9px;font-size:12px;font-weight:800;cursor:pointer}
+.ci-photo-library-item button:disabled{background:#dfe7ef;color:#667c90;cursor:not-allowed}
+@media(max-width:570px){.ci-photo-library{padding:13px}.ci-photo-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ci-photo-library-item img{height:115px}}
+
+.ci-photo-library-item .ci-photo-library-delete{background:#fff;color:#9e2432;border:1px solid #bb5660}
+.ci-photo-library-item .ci-photo-library-delete:hover:not(:disabled){background:#fff0f1}
+.ci-photo-library-item .ci-photo-library-delete:disabled{background:#f3f5f8;color:#87919c;border-color:#d9e0e8}
+
+.ci-photo-library-pending{display:grid;place-items:center;height:145px;background:#f3f4f6;color:#a13c47;font-weight:800;font-size:12px}

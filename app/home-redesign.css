@@ -537,3 +537,9 @@
 .ci-property-room-thumbnails button:hover,.ci-property-room-thumbnails button:focus-visible{border-color:#286daa;outline-offset:2px}
 .ci-property-room-thumbnails img{width:100%;height:100%;display:block;object-fit:cover}
 .ci-property-room-thumbnails span{position:absolute;bottom:0;right:0;left:0;background:#112d4abf;color:white;padding:4px;font-size:10px;text-align:center}
+
+/* Guest login CTA visible on hotel detail pages and homepage. */
+.ci-site .ci-nav-guest{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;background:#e9f3ff;border:1px solid #abc8e4;border-radius:5px;color:#154b84!important;text-decoration:none;font-size:12px;font-weight:800}
+.ci-site .ci-nav-guest:hover{background:#d9eaff}
+.ci-property-topnav .ci-property-nav-guest{border:1px solid #acc5df;border-radius:4px;padding:11px 13px;color:#15518c;text-decoration:none;font-weight:800}
+@media(max-width:720px){.ci-property-topnav .ci-property-nav-guest{font-size:11px;padding:9px 10px}}
