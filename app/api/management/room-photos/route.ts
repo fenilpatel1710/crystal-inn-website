@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {getCloudflareContext} from '@opennextjs/cloudflare';
 import {authorize,noStore} from '../../../../lib/platform/auth';
+import type {DB} from '../../../../lib/admin/auth';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -28,7 +29,7 @@ async function access(req:NextRequest){
  if(auth instanceof NextResponse)return auth;
  return {auth,scope};
 }
-async function hasRoom(db:ReturnType<typeof authorize> extends Promise<infer T> ? Exclude<T,NextResponse>['db'] : never,hotelId:string,roomId:string){
+async function hasRoom(db:DB,hotelId:string,roomId:string){
  return db.prepare('SELECT r.id FROM hotel_room_types r JOIN hotels h ON h.id=r.hotel_id WHERE r.hotel_id=? AND r.id=? AND h.archived_at IS NULL')
   .bind(hotelId,roomId).first<{id:string}>();
 }
