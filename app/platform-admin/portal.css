@@ -21,3 +21,31 @@
 .ci-photo-upload-preview img{width:170px;height:118px;object-fit:cover;border-radius:5px;background:#e5edf5}
 .ci-photo-upload-preview>div{min-width:0;overflow-wrap:anywhere}
 @media(max-width:520px){.ci-photo-upload-preview{align-items:stretch;flex-direction:column}.ci-photo-upload-preview img{width:100%;height:180px}}
+
+
+/* Room-specific three-photo library, shared by Super Admin and Property Admin */
+.ci-room-photo-manager{margin-top:28px;padding:25px;border:1px solid #d4e1ef;border-radius:9px;background:#f9fbfe;max-width:100%}
+.ci-room-photo-heading{display:flex;align-items:start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.ci-room-photo-heading h3{font-size:23px;color:#143b65;margin:0 0 8px}
+.ci-room-photo-heading p{font-size:14px;line-height:1.75;color:#59728b;max-width:680px;margin:0 0 22px}
+.ci-room-photo-counter{display:inline-flex;background:#e6f0fb;color:#1a4b81;border-radius:99px;padding:8px 13px;white-space:nowrap}
+.ci-room-photo-manager>label{max-width:500px;display:flex;flex-direction:column;gap:8px;font-weight:700;color:#1a3d62;font-size:13px}
+.ci-room-photo-manager select{padding:13px;border:1px solid #b9cce0;border-radius:5px;background:white;min-width:0;color:#163c66;font-size:15px}
+.ci-room-photo-context{border-left:3px solid #2774bb;padding:10px 14px;background:#eef5ff;color:#3f5975;font-size:13px;margin:19px 0}
+.ci-room-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:18px 0 22px}
+.ci-room-photo-tile{overflow:hidden;border:1px solid #d0dded;border-radius:6px;background:#fff}
+.ci-room-photo-tile img{display:block;width:100%;height:155px;object-fit:cover;background:#e9f0f7}
+.ci-room-photo-tile>div{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:11px}
+.ci-room-photo-tile strong{font-size:12px}
+.ci-room-photo-tile button{border:1px solid #d2a0a0;background:#fff;color:#a43838;border-radius:3px;padding:8px 12px;cursor:pointer}
+.ci-room-photo-empty{min-height:155px;display:flex;align-items:center;justify-content:center;color:#6d86a0;background:#f0f5fb;border:1px dashed #bed0e4;border-radius:6px;font-size:12px;text-align:center;padding:14px}
+.ci-room-photo-form{display:grid;gap:15px;max-width:620px}
+.ci-room-photo-form label{display:flex;flex-direction:column;gap:9px;font-weight:700;color:#173b60;font-size:13px}
+.ci-room-photo-form input[type=file]{width:100%;padding:13px;border:1px dashed #a4bdd5;background:white;border-radius:5px}
+.ci-room-photo-form button[type=submit]{background:#164b83;color:white;border:none;border-radius:5px;padding:13px 17px;font-weight:800;cursor:pointer;justify-self:start}
+.ci-room-photo-form button:disabled{opacity:.5;cursor:not-allowed}
+.ci-room-photo-selection{display:flex;align-items:center;gap:15px;background:white;border:1px solid #d2dfed;padding:13px;border-radius:6px;min-width:0;overflow-wrap:anywhere}
+.ci-room-photo-selection img{width:126px;height:85px;object-fit:cover;border-radius:4px}
+.ci-room-photo-selection p{font-size:12px;color:#6c8299}
+@media(max-width:620px){.ci-room-photo-manager{padding:17px}.ci-room-photo-grid{grid-template-columns:1fr 1fr}.ci-room-photo-tile img{height:130px}}
+@media(max-width:440px){.ci-room-photo-grid{grid-template-columns:1fr}.ci-room-photo-selection{flex-direction:column;align-items:stretch}.ci-room-photo-selection img{width:100%;height:140px}}
