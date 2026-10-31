@@ -125,6 +125,22 @@ export default function RoomPhotoManager({scope,hotelId,rooms}:Props){
    <option value="">Select a room type</option>{rooms.map(room=><option key={room.id} value={room.id}>{room.display_name}</option>)}
   </select></label>
   {!rooms.length&&<p className="ci-small">Add a room category before assigning its photos.</p>}
+  {!roomId&&<div className="ci-photo-library" style={{marginTop:20}}>
+   <div className="ci-photo-library-title"><strong>Hotel photo library · storage cleanup</strong>
+    <button type="button" disabled={busy||loadingLibrary} onClick={()=>void refreshLibrary()}>Refresh library</button>
+   </div>
+   <p className="ci-small">Select a room above to add photos. You can permanently delete unused images here without choosing a room.</p>
+   {loadingLibrary?<p>Loading photos…</p>:library.length?<div className="ci-photo-library-grid">
+    {library.map(asset=><article key={asset.id} className="ci-photo-library-item">
+     {asset.status==='deleting'?<div className="ci-photo-library-pending">Deletion pending</div>:<img src={asset.url} alt="Hotel library photo" loading="lazy"/>}
+     <div><small>{asset.assignedCount} room assignment{asset.assignedCount===1?'':'s'}</small>
+      <button type="button" className="ci-photo-library-delete" disabled={busy||asset.assignedCount>0}
+       onClick={()=>void permanentDelete(asset)}>{asset.status==='deleting'?'Retry deletion':'Delete permanently'}</button>
+      {asset.assignedCount>0&&<small>Remove from all rooms before permanently deleting.</small>}
+     </div>
+    </article>)}
+   </div>:<p className="ci-small">No photos in the hotel library.</p>}
+  </div>}
   {roomId&&<>
    <p className="ci-room-photo-context">Selected room: <strong>{selectedRoom?.display_name}</strong>. Photos are saved to this room type only.</p>
    {loading?<p>Loading room gallery…</p>:<div className="ci-room-photo-grid">
@@ -142,7 +158,7 @@ export default function RoomPhotoManager({scope,hotelId,rooms}:Props){
     <div className="ci-photo-library-title"><strong>Photos already uploaded to this hotel</strong><button type="button" onClick={()=>void refreshLibrary()} disabled={busy||loadingLibrary}>Refresh library</button></div>
     {loadingLibrary?<p>Loading available photos…</p>:library.length?<div className="ci-photo-library-grid">
      {library.map(asset=><article className="ci-photo-library-item" key={asset.id}>
-      <img src={asset.url} loading="lazy" alt="Previously uploaded hotel room photo"/>
+      {asset.status==='deleting'?<div className="ci-photo-library-pending">Deletion pending</div>:<img src={asset.url} loading="lazy" alt="Previously uploaded hotel room photo"/>}
       <div><small>{asset.assignedCount} room assignment{asset.assignedCount===1?'':'s'}</small>
       <button type="button" disabled={busy||loading||asset.status!=='active'||photos.length>=3||alreadyAssigned.has(asset.id)} onClick={()=>void reuse(asset)}>
        {asset.status==='deleting'?'Deletion pending':alreadyAssigned.has(asset.id)?'Already in this room':photos.length>=3?'Room is full':'Use for this room'}
