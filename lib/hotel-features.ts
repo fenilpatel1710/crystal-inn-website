@@ -36,6 +36,6 @@ export function validGoogleReviewUrl(value:string){
   const u=new URL(value);
   return u.protocol==='https:'&&!u.username&&!u.password&&
     (u.hostname==='google.com'||u.hostname.endsWith('.google.com')||
-     u.hostname==='maps.app.goo.gl'||u.hostname==='goo.gl');
+     u.hostname==='maps.app.goo.gl'||u.hostname==='goo.gl'||u.hostname==='g.page');
  }catch{return false}
 }
