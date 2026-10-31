@@ -24,6 +24,8 @@ jobs:
           bun-version: '1.4.4'
       - name: Install dependencies
         run: bun install
+      - name: Unit test Lumen cookie authentication safety
+        run: bun test tests/lumen-cookie-core.test.mjs
       - name: Build Next.js for Cloudflare Workers
         run: bun run build:cloudflare
       - name: Record build result on the GitHub commit
