@@ -47,7 +47,8 @@ export default function BookPage(){
      const response=await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','X-Reservation-Request-Key':requestKey.current},body:JSON.stringify(form),cache:'no-store'});
      const data=await response.json().catch(()=>({}));
      if(!response.ok)throw new Error(typeof data.error==='string'?data.error:'Unable to submit request. Please contact the front desk.');
-     setReference(data.reference);setNotificationPending(data.notification!=='sent');requestKey.current='';setForm(blank);
+     setReference(data.reference);setNotificationPending(data.notification!=='sent');requestKey.current='';
+     setForm(prev=>guestSession?{...blank,firstName:prev.firstName,lastName:prev.lastName,phone:prev.phone,email:prev.email}:blank);
    }catch(err){setError(err instanceof Error?err.message:'Unable to submit request.');}
    finally{setLoading(false);}
  }
