@@ -98,6 +98,7 @@ export async function POST(req:NextRequest){
    ]).catch(()=>{});
    return failure('R2 photo upload failed; try again.',503);
   }
+  await a.auth.db.prepare("UPDATE hotel_media_assets SET status='active' WHERE id=? AND hotel_id=? AND status='uploading'").bind(assetId,hotelId).run();
   if(a.scope==='platform')await a.auth.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)')
    .bind(crypto.randomUUID(),a.auth.email,'upload_room_photo',hotelId,roomId+' slot '+slot).run().catch(()=>{});
   return NextResponse.json({ok:true,photo:{id,slot,assetId}},{headers:noStore});
