@@ -1,7 +1,9 @@
 'use client';
 import {useEffect,useId,useRef,useState} from 'react';
+import HotelFeatures from './HotelFeatures';
+import type {FeatureFlags} from '../lib/hotel-features';
 
-type Hotel={id:string;slug:string;display_name:string;city:string;region:string;description:string;hero_image_url:string|null;public_phone?:string;is_legacy_booking?:boolean};
+type Hotel={id:string;slug:string;display_name:string;city:string;region:string;description:string;hero_image_url:string|null;public_phone?:string;is_legacy_booking?:boolean;features?:FeatureFlags};
 type Suggestion={id:string;label:string;detail:string;search:string;type:'location'|'hotel'};
 function HotelPhoto({hotel}:{hotel:Hotel}){
  const [failed,setFailed]=useState(false);
@@ -73,6 +75,7 @@ export default function HotelDirectory({compact=false}:{compact?:boolean}){
  <div className="ci-hotel-list">{shown.map(h=><article className="ci-hotel-card" key={h.id}>
  <div className="ci-hotel-card-image"><HotelPhoto hotel={h}/></div>
  <div className="ci-hotel-card-content"><span className="ci-hotel-location">{h.city}, {h.region}</span><h3>{h.display_name}</h3><p>{h.description||'Discover rooms, amenities and local hospitality at this Crystal Inn location.'}</p>
+ <HotelFeatures features={h.features}/>
  <div className="ci-hotel-card-actions"><a href={'/hotels/'+encodeURIComponent(h.slug)}>Explore hotel →</a>{h.is_legacy_booking&&<a href={'/request-stay?hotel='+encodeURIComponent(h.slug)} className="ci-hotel-request">Request a stay</a>}</div></div></article>)}</div>
  {loading?<p className="ci-hotel-empty">Loading Crystal Inn locations…</p>:loadError?<p role="alert" className="ci-hotel-empty">{loadError} <a href="/contact">Contact guest services</a></p>:hotels.length===0?<p className="ci-hotel-empty">No Crystal Inn locations are currently published. Please check back or <a href="/contact">contact guest services</a>.</p>:!shown.length?<p className="ci-hotel-empty">No hotels match “{query}”. <button type="button" onClick={()=>{setQuery('');setSuggestionsOpen(false)}} style={{border:0,background:'transparent',textDecoration:'underline',color:'#184aaf',cursor:'pointer'}}>Clear search</button></p>:null}
  </div></section>
