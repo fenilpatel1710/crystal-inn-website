@@ -5,7 +5,7 @@ import '../app/platform-admin/portal.css';
 
 type Room={id:string;display_name:string};
 type Photo={id:string;slot:number;url:string;assetId:string};
-type Asset={id:string;url:string;assignedCount:number;createdAt:string};
+type Asset={id:string;url:string;assignedCount:number;createdAt:string;status:'active'|'deleting'};
 type Props={scope:'platform'|'hotel';hotelId:string;rooms:Room[]};
 const MAX_BYTES=5*1024*1024;
 export default function RoomPhotoManager({scope,hotelId,rooms}:Props){
@@ -86,6 +86,25 @@ export default function RoomPhotoManager({scope,hotelId,rooms}:Props){
   }catch(e){setError(e instanceof Error?e.message:'Could not reuse photo.')}
   finally{setBusy(false)}
  }
+ async function permanentDelete(asset:Asset){
+  if(busy||asset.assignedCount>0)return;
+  const description=asset.status==='deleting'?'Retry deleting the stored photo from R2?':
+   'Permanently delete this unused photo from Cloudflare R2 storage? This cannot be undone.';
+  if(!window.confirm(description))return;
+  setBusy(true);setError('');setNotice('');
+  try{
+   const response=await fetch(endpoint,{method:'DELETE',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'delete_asset',hotelId,assetId:asset.id}),cache:'no-store'});
+   const json=await response.json();
+   if(!response.ok)throw Error(json.error||'Photo deletion failed.');
+   await refreshLibrary();
+   if(roomId)await refreshPhotos(roomId);
+   setNotice('Photo permanently deleted from the hotel library and R2 storage.');
+  }catch(e){
+   setError(e instanceof Error?e.message:'Photo deletion failed.');
+   await refreshLibrary();
+  }finally{setBusy(false)}
+ }
  async function remove(photo:Photo){
   const room=rooms.find(r=>r.id===roomId)?.display_name||'this room';
   if(!window.confirm('Remove photo '+photo.slot+' from '+room+'? It will remain in your hotel library and any other rooms using it.'))return;
@@ -125,9 +144,16 @@ export default function RoomPhotoManager({scope,hotelId,rooms}:Props){
      {library.map(asset=><article className="ci-photo-library-item" key={asset.id}>
       <img src={asset.url} loading="lazy" alt="Previously uploaded hotel room photo"/>
       <div><small>{asset.assignedCount} room assignment{asset.assignedCount===1?'':'s'}</small>
-      <button type="button" disabled={busy||loading||photos.length>=3||alreadyAssigned.has(asset.id)} onClick={()=>void reuse(asset)}>
-       {alreadyAssigned.has(asset.id)?'Already in this room':photos.length>=3?'Room is full':'Use for this room'}
-      </button></div>
+      <button type="button" disabled={busy||loading||asset.status!=='active'||photos.length>=3||alreadyAssigned.has(asset.id)} onClick={()=>void reuse(asset)}>
+       {asset.status==='deleting'?'Deletion pending':alreadyAssigned.has(asset.id)?'Already in this room':photos.length>=3?'Room is full':'Use for this room'}
+      </button>
+      <button type="button" className="ci-photo-library-delete" disabled={busy||asset.assignedCount>0}
+       title={asset.assignedCount>0?'Remove this photo from all room types before permanent deletion':'Permanently delete this image from Cloudflare R2'}
+       onClick={()=>void permanentDelete(asset)}>
+        {asset.status==='deleting'?'Retry deletion':'Delete permanently'}
+      </button>
+      {asset.assignedCount>0&&<small>Remove from all {asset.assignedCount} room assignment{asset.assignedCount===1?'':'s'} to enable permanent deletion.</small>}
+      </div>
      </article>)}
     </div>:<p className="ci-small">No uploaded room photos are available yet. Upload the first photo and it will appear here for all of this hotel's room types.</p>}
    </div>:<form onSubmit={upload} className="ci-room-photo-form">
