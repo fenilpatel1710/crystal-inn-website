@@ -2,6 +2,9 @@
 -- Back up D1 and apply AFTER 0009. Additive; no ID scan or Lumen guest data stored.
 -- A hotel-scoped portal account is NOT proof of ownership of any historic Lumen record.
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_portal_guest_user_hotel
+ON portal_guest_users(id, hotel_id);
+
 CREATE TABLE IF NOT EXISTS portal_guest_profiles (
   portal_user_id TEXT PRIMARY KEY REFERENCES portal_guest_users(id) ON DELETE CASCADE,
   hotel_id TEXT NOT NULL REFERENCES hotels(id),
