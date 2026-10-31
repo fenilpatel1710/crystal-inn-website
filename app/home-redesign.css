@@ -523,3 +523,9 @@
 @media(max-width:950px){.ci-property-intro-layout{gap:4%}.ci-property-photo-main{height:390px}.ci-property-room-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ci-property-booking-grid{gap:5%}}
 @media(max-width:720px){.ci-property-topnav{gap:12px}.ci-property-topnav>a:not(.ci-property-nav-cta){display:none}.ci-property-intro-layout,.ci-property-about,.ci-property-booking-grid{grid-template-columns:1fr}.ci-property-intro{padding-bottom:40px}.ci-property-intro-copy{padding-bottom:18px}.ci-property-intro-copy h1{font-size:48px}.ci-property-photo-main{height:340px}.ci-property-intro-facts{margin-top:25px}.ci-property-about>div:last-child{padding-top:0}.ci-property-section{padding:65px 0}.ci-property-section-heading{flex-direction:column;align-items:start}.ci-property-room-grid{grid-template-columns:1fr}.ci-property-contact-cards{grid-template-columns:1fr}.ci-property-booking-card{padding:23px}.ci-property-bottom-cta>.ci-shell{align-items:start;flex-direction:column}.ci-property-quickbar>.ci-shell{gap:20px}.ci-property-quickbar a{font-size:12px;padding:15px 0}}
 @media(max-width:420px){.ci-property-utility>.ci-shell{flex-direction:column;gap:6px}.ci-property-intro-copy h1{font-size:40px}.ci-property-photo-main{height:265px}.ci-property-booking-fields{grid-template-columns:1fr}.ci-property-booking-fields label:last-child{grid-column:auto}.ci-property-contact-cards article{padding:24px}.ci-property-no-rooms{padding:26px}.ci-property-lightbox{padding:15px}}
+
+/* Room rates: manually maintained until the property's PMS is connected */
+.ci-property-room-info .ci-property-room-rate{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px;min-height:0;margin:5px 0 13px;color:#173b64}
+.ci-property-room-rate strong{font:normal 28px Georgia,serif;color:#10385f}
+.ci-property-room-rate span{font-size:12px;color:#61778d}
+.ci-property-rate-disclaimer{display:block;margin-top:15px;font-size:11px;line-height:1.5;color:#7a899a}
