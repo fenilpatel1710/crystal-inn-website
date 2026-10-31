@@ -27,6 +27,10 @@ export default function HotelPage(){
   setActiveTab(tab);
   if(window.location.hash!=='#'+tab)window.history.replaceState(null,'','#'+tab);
  }
+ function goToTab(tab:PropertyTab){
+  selectTab(tab);
+  document.getElementById('hotel-section-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
+ }
  function handleTabKeys(event:KeyboardEvent<HTMLDivElement>){
   if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
   event.preventDefault();
@@ -63,13 +67,13 @@ export default function HotelPage(){
  const today=new Date().toLocaleDateString('en-CA');
  return <main className="ci-site ci-property-page">
  <div className="ci-property-utility"><div className="ci-shell"><span>CRYSTAL INN HOTELS & STAYS</span><a href="/#find-hotels">Explore all locations ↗</a></div></div>
- <header className="ci-header"><div className="ci-shell ci-navbar"><a href="/" className="ci-brand"><img src="/crystal-inn-logo.svg" width="50" height="50" alt="Crystal Inn logo"/><span>CRYSTAL INN<small>HOTELS & STAYS</small></span></a><nav className="ci-property-topnav"><a href="/#find-hotels">Our hotels</a><a href="#accommodations" onClick={()=>selectTab('accommodations')}>Rooms</a><a href="#location" onClick={()=>selectTab('location')}>Location</a><a className="ci-property-nav-cta" href={guestInquiryUrl}>Contact hotel ↗</a></nav></div></header>
+ <header className="ci-header"><div className="ci-shell ci-navbar"><a href="/" className="ci-brand"><img src="/crystal-inn-logo.svg" width="50" height="50" alt="Crystal Inn logo"/><span>CRYSTAL INN<small>HOTELS & STAYS</small></span></a><nav className="ci-property-topnav"><a href="/#find-hotels">Our hotels</a><a href="#accommodations" onClick={()=>goToTab('accommodations')}>Rooms</a><a href="#location" onClick={()=>goToTab('location')}>Location</a><a className="ci-property-nav-cta" href={guestInquiryUrl}>Contact hotel ↗</a></nav></div></header>
  {loading?<div className="ci-shell ci-property-loading"><h1>Discover your Crystal Inn</h1><p>Loading property information…</p></div>:error||!hotel?<div className="ci-shell ci-property-loading"><p className="ci-eyebrow">PROPERTY UNAVAILABLE</p><h1>We couldn’t find this hotel.</h1><p>{error||'Please return to the hotel directory.'}</p><a className="ci-btn ci-btn-blue" href="/#find-hotels">Browse Crystal Inn locations →</a></div>:<>
  <div className="ci-shell ci-property-breadcrumb"><a href="/">Home</a><span>/</span><a href="/#find-hotels">Locations</a><span>/</span><strong>{hotel.display_name}</strong></div>
  <section className="ci-property-intro">
   <div className="ci-shell ci-property-intro-layout">
    <div className="ci-property-intro-copy"><p className="ci-eyebrow">YOUR STAY STARTS HERE · {hotel.city.toUpperCase()}, {hotel.region.toUpperCase()}</p><h1>{hotel.display_name}</h1><p className="ci-property-lead">{hotel.description?.trim()||'A welcoming place to stay in '+hotel.city+'. Discover the property, browse available room categories and contact the team to plan your visit.'}</p>
-   <div className="ci-property-action-row"><a className="ci-btn ci-btn-blue" href="#plan-stay" onClick={()=>selectTab('plan-stay')}>Plan your stay <span aria-hidden="true">→</span></a><a className="ci-property-outline-link" href="#accommodations" onClick={()=>selectTab('accommodations')}>Explore rooms ↗</a></div>
+   <div className="ci-property-action-row"><a className="ci-btn ci-btn-blue" href="#plan-stay" onClick={()=>goToTab('plan-stay')}>Plan your stay <span aria-hidden="true">→</span></a><a className="ci-property-outline-link" href="#accommodations" onClick={()=>goToTab('accommodations')}>Explore rooms ↗</a></div>
    <div className="ci-property-intro-facts"><span>◈ {hotel.city}, {hotel.region}</span><span>◈ Contact the hotel for current rates</span></div>
    </div>
    <div className="ci-property-photo-main">
@@ -79,7 +83,7 @@ export default function HotelPage(){
    </div>
   </div>
  </section>
- <div className="ci-property-quickbar"><div className="ci-shell" role="tablist" aria-label="Property page sections" onKeyDown={handleTabKeys}>
+ <div className="ci-property-quickbar" id="hotel-section-tabs"><div className="ci-shell" role="tablist" aria-label="Property page sections" onKeyDown={handleTabKeys}>
   {([{id:'overview',label:'Overview'},{id:'accommodations',label:'Rooms'},{id:'plan-stay',label:'Plan a stay'},{id:'location',label:'Location & contact'}] as const).map(({id,label})=>
    <button key={id} type="button" role="tab" id={'hotel-tab-'+id}
     aria-controls={'hotel-panel-'+id} aria-selected={activeTab===id}
@@ -90,7 +94,7 @@ export default function HotelPage(){
  <div className="ci-shell ci-property-tab-frame">
  {activeTab==='overview'&&<section className="ci-property-section" id="hotel-panel-overview" role="tabpanel" aria-labelledby="hotel-tab-overview" tabIndex={0}><div className="ci-shell ci-property-about">
  <div><p className="ci-eyebrow">01 / GET TO KNOW YOUR HOTEL</p><h2>Make yourself<br/><em>at home.</em></h2></div>
- <div><p>{hotel.description?.trim()||'Explore the accommodations and contact details for '+hotel.display_name+'. Our hotel team can help you understand available room options and plan your visit.'}</p><p className="ci-property-muted">Room amenities, rates and availability can vary. Please contact this property to confirm details before your stay.</p><a href="#location" className="ci-property-text-link" onClick={()=>selectTab('location')}>Contact this property →</a></div>
+ <div><p>{hotel.description?.trim()||'Explore the accommodations and contact details for '+hotel.display_name+'. Our hotel team can help you understand available room options and plan your visit.'}</p><p className="ci-property-muted">Room amenities, rates and availability can vary. Please contact this property to confirm details before your stay.</p><a href="#location" className="ci-property-text-link" onClick={()=>goToTab('location')}>Contact this property →</a></div>
  </div></section>}
  {activeTab==='accommodations'&&<section className="ci-property-section ci-property-rooms-section" id="hotel-panel-accommodations" role="tabpanel" aria-labelledby="hotel-tab-accommodations" tabIndex={0}><div className="ci-shell">
  <div className="ci-property-section-heading"><div><p className="ci-eyebrow">02 / ACCOMMODATIONS</p><h2>Find your kind<br/>of comfort.</h2></div><p>Explore the room categories currently listed for this property. Photos and descriptions are maintained by the hotel team.</p></div>
