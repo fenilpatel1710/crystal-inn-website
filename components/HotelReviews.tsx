@@ -6,7 +6,8 @@ type ReviewData={
  reviews:Review[];summary:{count:number;average:number|null};canReview:boolean;
  ownReview:{rating:number;reviewText:string;status:string}|null
 };
-type GoogleData={rating:number|null;userRatingCount:number|null;writeReviewUrl:string|null;reviewsUrl:string|null;connected:boolean;source:string};
+type GoogleReview={rating:number;text:string;authorName:string;authorUrl:string|null;authorPhoto:string|null;reviewUrl:string|null};
+type GoogleData={rating:number|null;userRatingCount:number|null;writeReviewUrl:string|null;reviewsUrl:string|null;connected:boolean;source:string;reviews:GoogleReview[]};
 export default function HotelReviews({slug}:{slug:string}){
  const [data,setData]=useState<ReviewData|null>(null),[google,setGoogle]=useState<GoogleData|null>(null);
  const [rating,setRating]=useState('5'),[body,setBody]=useState(''),[busy,setBusy]=useState(false);
@@ -56,6 +57,20 @@ export default function HotelReviews({slug}:{slug:string}){
     <small>Reviews written by SMS-verified hotel accounts, not necessarily verified stays.</small>
    </div>
   </div>
+  {google?.reviews?.length?<section className="ci-google-reviews" aria-label="Google Maps guest reviews">
+    <h3>Recent Google Maps reviews</h3>
+    <p className="ci-review-google-attribution">Source: Google Maps · These reviews were posted on Google, not Crystal Inn.</p>
+    <div className="ci-review-list">{google.reviews.map((r,i)=><article key={(r.reviewUrl||r.authorName)+i}>
+      <div className="ci-google-review-author">
+       {r.authorPhoto&&<img src={r.authorPhoto} alt="" width={34} height={34} loading="lazy"/>}
+       {r.authorUrl?<a href={r.authorUrl} target="_blank" rel="noopener noreferrer">{r.authorName}</a>:<strong>{r.authorName}</strong>}
+       <span>Google Maps</span>
+      </div>
+      <strong>{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</strong>
+      <p>{r.text}</p>
+      {r.reviewUrl&&<a href={r.reviewUrl} target="_blank" rel="noopener noreferrer">View original review on Google Maps ↗</a>}
+    </article>)}</div>
+   </section>:null}
   {data?.canReview?<form className="ci-review-form" onSubmit={submit}>
     <h3>{data.ownReview?'Update your hotel review':'Write a Crystal Inn review'}</h3>
     {data.ownReview?.status==='hidden'?<p>Your earlier review is under moderation. Contact the hotel for assistance.</p>:<>
