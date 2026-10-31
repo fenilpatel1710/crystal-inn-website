@@ -15,7 +15,7 @@ interface D1Database {
   batch(statements: D1Statement[]): Promise<unknown[]>;
 }
 const allowedRoomTypes = new Set(['King Non-Smoking', 'King Smoking', 'Queen Non-Smoking', 'No preference']);
-const emailPattern = /^[^\s@]+@[^\s@]+\\.[^\s@]+$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const text = (value: unknown, max: number) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const safe = (value: string) => value.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] || c));
 const noStore = {'Cache-Control': 'no-store'};
@@ -49,14 +49,23 @@ export async function POST(request: NextRequest) {
     lastName:text(input.lastName,70), phone:text(input.phone,30), email:text(input.email,160),
     notes:text(input.notes,600)
   };
-  const today = new Date().toLocaleDateString('en-CA', {timeZone:'America/Chicago'});
+  // Derive hotel-local calendar date without depending on locale-specific order.
+  const chicagoParts = new Intl.DateTimeFormat('en-US', {
+    timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date());
+  const part=(name:string)=>chicagoParts.find(p=>p.type===name)?.value||'';
+  const today = part('year')+'-'+part('month')+'-'+part('day');
   const nights = (Date.parse(v.checkOut+'T12:00:00Z')-Date.parse(v.checkIn+'T12:00:00Z'))/86400000;
-  if (!validDate(v.checkIn) || !validDate(v.checkOut) || v.checkIn < today || nights < 1 || nights > 30 ||
-      !allowedRoomTypes.has(v.roomType) || !Number.isInteger(v.rooms) || v.rooms < 1 || v.rooms > 4 ||
-      !Number.isInteger(v.guests) || v.guests < 1 || v.guests > 8 ||
-      !v.firstName || !v.lastName || !emailPattern.test(v.email) || !/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(usPhoneE164(v.phone))) {
-    return NextResponse.json({error:'Check your dates, room selection and contact information.'},{status:400});
-  }
+  const invalid=(error:string)=>NextResponse.json({error},{status:400,headers:noStore});
+  if(!validDate(v.checkIn)||!validDate(v.checkOut)) return invalid('Enter valid check-in and check-out dates.');
+  if(v.checkIn<today) return invalid('Choose a future check-in date.');
+  if(!Number.isFinite(nights)||nights<1||nights>30) return invalid('Select a stay of 1 to 30 nights, with check-out after check-in.');
+  if(!allowedRoomTypes.has(v.roomType)) return invalid('Select one of the available room types.');
+  if(!Number.isInteger(v.rooms)||v.rooms<1||v.rooms>4) return invalid('Select 1 to 4 rooms.');
+  if(!Number.isInteger(v.guests)||v.guests<1||v.guests>8) return invalid('Select 1 to 8 guests.');
+  if(!v.firstName||!v.lastName) return invalid('Enter your first and last name.');
+  if(!emailPattern.test(v.email)) return invalid('Enter a valid email address.');
+  if(!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(usPhoneE164(v.phone))) return invalid('Enter a valid US phone number with area code.');
 
   let db: D1Database;
   try {
