@@ -2,14 +2,17 @@
 import {useEffect,useState,type KeyboardEvent} from 'react';
 import {useParams} from 'next/navigation';
 import '../../home-redesign.css';
+import HotelFeatures from '../../../components/HotelFeatures';
+import HotelReviews from '../../../components/HotelReviews';
+import type {FeatureFlags} from '../../../lib/hotel-features';
 
 type Hotel={
  id:string;slug:string;display_name:string;city:string;region:string;address_text?:string|null;
  description?:string|null;public_phone?:string|null;public_email?:string|null;hero_image_url?:string|null;
- is_legacy_booking?:boolean;rewards_enabled?:number;
+ is_legacy_booking?:boolean;rewards_enabled?:number;features?:FeatureFlags;
 };
-type PropertyTab='overview'|'accommodations'|'plan-stay'|'location';
-const propertyTabs:PropertyTab[]=['overview','accommodations','plan-stay','location'];
+type PropertyTab='overview'|'accommodations'|'plan-stay'|'location'|'reviews';
+const propertyTabs:PropertyTab[]=['overview','accommodations','plan-stay','location','reviews'];
 type RoomPhoto={id:string;slot:number;url:string};
 type Room={id:string;display_name:string;description:string|null;image_url?:string|null;starting_rate_cents?:number|null;photos?:RoomPhoto[]};
 function ImageWithFallback({src,alt,className}:{src:string|null|undefined;alt:string;className?:string}){
@@ -84,7 +87,7 @@ export default function HotelPage(){
   </div>
  </section>
  <div className="ci-property-quickbar" id="hotel-section-tabs"><div className="ci-shell" role="tablist" aria-label="Property page sections" onKeyDown={handleTabKeys}>
-  {([{id:'overview',label:'Overview'},{id:'accommodations',label:'Rooms'},{id:'plan-stay',label:'Plan a stay'},{id:'location',label:'Location & contact'}] as const).map(({id,label})=>
+  {([{id:'overview',label:'Overview'},{id:'accommodations',label:'Rooms'},{id:'plan-stay',label:'Plan a stay'},{id:'location',label:'Location & contact'},{id:'reviews',label:'Guest reviews'}] as const).map(({id,label})=>
    <button key={id} type="button" role="tab" id={'hotel-tab-'+id}
     aria-controls={'hotel-panel-'+id} aria-selected={activeTab===id}
     tabIndex={activeTab===id?0:-1} className={activeTab===id?'is-active':''}
@@ -94,7 +97,8 @@ export default function HotelPage(){
  <div className="ci-shell ci-property-tab-frame">
  {activeTab==='overview'&&<section className="ci-property-section" id="hotel-panel-overview" role="tabpanel" aria-labelledby="hotel-tab-overview" tabIndex={0}><div className="ci-shell ci-property-about">
  <div><p className="ci-eyebrow">01 / GET TO KNOW YOUR HOTEL</p><h2>Make yourself<br/><em>at home.</em></h2></div>
- <div><p>{hotel.description?.trim()||'Explore the accommodations and contact details for '+hotel.display_name+'. Our hotel team can help you understand available room options and plan your visit.'}</p><p className="ci-property-muted">Room amenities, rates and availability can vary. Please contact this property to confirm details before your stay.</p><a href="#location" className="ci-property-text-link" onClick={()=>goToTab('location')}>Contact this property →</a></div>
+ <div><p>{hotel.description?.trim()||'Explore the accommodations and contact details for '+hotel.display_name+'. Our hotel team can help you understand available room options and plan your visit.'}</p><h3>Hotel amenities and services</h3><HotelFeatures features={hotel.features} all/>
+  <p className="ci-property-muted">A check mark means the hotel has enabled that feature. An empty box means it is not listed as offered. Contact the property to confirm availability and any fees.</p><a href="#location" className="ci-property-text-link" onClick={()=>goToTab('location')}>Contact this property →</a></div>
  </div></section>}
  {activeTab==='accommodations'&&<section className="ci-property-section ci-property-rooms-section" id="hotel-panel-accommodations" role="tabpanel" aria-labelledby="hotel-tab-accommodations" tabIndex={0}><div className="ci-shell">
  <div className="ci-property-section-heading"><div><p className="ci-eyebrow">02 / ACCOMMODATIONS</p><h2>Find your kind<br/>of comfort.</h2></div><p>Explore the room categories currently listed for this property. Photos and descriptions are maintained by the hotel team.</p></div>
@@ -105,6 +109,7 @@ export default function HotelPage(){
  </article>)}</div>:<div className="ci-property-no-rooms"><div><span className="ci-property-card-kicker">ROOMS & ACCOMMODATIONS</span><h3>Let's find the right room for you.</h3><p>Online room details are being prepared for this property. You can still contact the hotel to ask about room types, rates and availability.</p><a href={guestInquiryUrl} className="ci-btn ci-btn-blue">Ask about rooms →</a></div></div>}
  </div></section>}
  {activeTab==='plan-stay'&&<section className="ci-property-section ci-property-booking-section" id="hotel-panel-plan-stay" role="tabpanel" aria-labelledby="hotel-tab-plan-stay" tabIndex={0}><div className="ci-shell ci-property-booking-grid"><div><p className="ci-eyebrow">03 / PLAN YOUR VISIT</p><h2>Your next stay,<br/><em>made simple.</em></h2><p>Choose your dates and number of guests. We'll carry your selections into the stay-request flow for this hotel.</p><p className="ci-property-muted">Submitting a request does not confirm a reservation, room rate or availability. Your hotel team will need to confirm these details.</p></div><div className="ci-property-booking-card"><p className="ci-property-card-kicker">REQUEST A STAY</p><h3>{hotel.display_name}</h3><div className="ci-property-booking-fields"><label>CHECK-IN<input type="date" min={today} value={checkIn} onChange={e=>{setCheckIn(e.target.value);if(checkOut&&e.target.value>=checkOut)setCheckOut('')}}/></label><label>CHECK-OUT<input type="date" min={checkIn||today} value={checkOut} onChange={e=>setCheckOut(e.target.value)}/></label><label>GUESTS<select value={guests} onChange={e=>setGuests(e.target.value)}>{Array.from({length:8},(_,i)=>i+1).map(n=><option value={n} key={n}>{n} {n===1?'guest':'guests'}</option>)}</select></label></div><a className="ci-btn ci-btn-blue ci-property-booking-submit" href={requestUrl}>Continue to stay request →</a><p>Not a confirmed reservation · No payment collected</p></div></div></section>}
+ {activeTab==='reviews'&&<section className="ci-property-section" id="hotel-panel-reviews" role="tabpanel" aria-labelledby="hotel-tab-reviews" tabIndex={0}><div className="ci-shell"><HotelReviews slug={slug}/></div></section>}
  {activeTab==='location'&&<section className="ci-property-section ci-property-location-section" id="hotel-panel-location" role="tabpanel" aria-labelledby="hotel-tab-location" tabIndex={0}><div className="ci-shell"><div className="ci-property-section-heading"><div><p className="ci-eyebrow">04 / LOCATION & CONTACT</p><h2>We're here<br/>to help.</h2></div><p>Questions about your stay? Contact the selected hotel or send a message to Crystal Inn guest services.</p></div><div className="ci-property-contact-cards"><article><span className="ci-property-card-kicker">FIND US</span><h3>{hotel.city}, {hotel.region}</h3><p>{address||'Contact the hotel for its complete street address.'}</p><a href={directionsUrl} target="_blank" rel="noopener noreferrer">View location on Google Maps ↗</a></article><article><span className="ci-property-card-kicker">GET IN TOUCH</span><h3>Property assistance</h3>{hotel.public_phone?<p><a href={'tel:'+hotel.public_phone.replace(/[^+\d]/g,'')}>{hotel.public_phone}</a></p>:<p>Phone number available through guest services.</p>}{hotel.public_email&&<p><a href={'mailto:'+hotel.public_email}>{hotel.public_email}</a></p>}<a href={guestInquiryUrl}>Send a hotel inquiry ↗</a></article></div></div></section>}
  </div>
  <section className="ci-property-bottom-cta"><div className="ci-shell"><div><p className="ci-eyebrow ci-on-dark">CRYSTAL INN HOTELS</p><h2>Ready to explore<br/>your stay?</h2><p>Connect with the hotel team and discover what's available.</p></div><a className="ci-btn ci-btn-white" href={requestUrl}>Request a stay →</a></div></section>
