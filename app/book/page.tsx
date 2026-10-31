@@ -2,6 +2,11 @@
 import {FormEvent, useState, useEffect, useRef} from 'react';
 import styles from './book.module.css';
 
+type GuestSession={
+ authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string;
+ profile?:{firstName:string;lastName:string;email:string}|null;
+ profileSetupPending?:boolean;
+};
 type BookingForm={
   checkIn:string;checkOut:string;roomType:string;rooms:string;guests:string;
   firstName:string;lastName:string;phone:string;email:string;notes:string;website:string;
@@ -10,7 +15,23 @@ const blank:BookingForm={checkIn:'',checkOut:'',roomType:'King Non-Smoking',room
 const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 export default function BookPage(){
  const [form,setForm]=useState<BookingForm>(blank);
- useEffect(()=>{const params=new URLSearchParams(window.location.search);const allowed=new Set(['King Non-Smoking','King Smoking','Queen Non-Smoking','No preference']);setForm(prev=>({...prev,checkIn:/^\\d{4}-\\d{2}-\\d{2}$/.test(params.get('checkIn')||'')?params.get('checkIn')!:prev.checkIn,checkOut:/^\\d{4}-\\d{2}-\\d{2}$/.test(params.get('checkOut')||'')?params.get('checkOut')!:prev.checkOut,roomType:allowed.has(params.get('roomType')||'')?params.get('roomType')!:prev.roomType,guests:/^[1-8]$/.test(params.get('guests')||'')?params.get('guests')!:prev.guests}));},[]);
+ const [guestSession,setGuestSession]=useState<GuestSession|null>(null);
+ useEffect(()=>{
+  let mounted=true;
+  fetch('/api/guest/me',{cache:'no-store'}).then(r=>r.json()).then((session:GuestSession)=>{
+   if(!mounted||!session.authenticated||session.hotelId!=='crystal-inn-northwest-290')return;
+   setGuestSession(session);
+   setForm(prev=>({
+    ...prev,
+    phone:prev.phone||session.phone||'',
+    firstName:prev.firstName||session.profile?.firstName||'',
+    lastName:prev.lastName||session.profile?.lastName||'',
+    email:prev.email||session.profile?.email||''
+   }));
+  }).catch(()=>{});
+  return ()=>{mounted=false};
+ },[]);
+ useEffect(()=>{const params=new URLSearchParams(window.location.search);const allowed=new Set(['King Non-Smoking','King Smoking','Queen Non-Smoking','No preference']);setForm(prev=>({...prev,checkIn:/^\d{4}-\d{2}-\d{2}$/.test(params.get('checkIn')||'')?params.get('checkIn')!:prev.checkIn,checkOut:/^\d{4}-\d{2}-\d{2}$/.test(params.get('checkOut')||'')?params.get('checkOut')!:prev.checkOut,roomType:allowed.has(params.get('roomType')||'')?params.get('roomType')!:prev.roomType,guests:/^[1-8]$/.test(params.get('guests')||'')?params.get('guests')!:prev.guests}));},[]);
  const [loading,setLoading]=useState(false);
  const [error,setError]=useState('');
  const [reference,setReference]=useState('');
@@ -45,15 +66,24 @@ export default function BookPage(){
          <label>Guests<select value={form.guests} onChange={e=>change('guests',e.target.value)}>{[1,2,3,4,5,6,7,8].map(n=><option key={n}>{n}</option>)}</select></label>
        </div>
        <h2>Guest contact</h2>
+       {guestSession?.authenticated&&<p className={styles.guestNotice}>
+        Signed in to <strong>{guestSession.hotelName}</strong>.
+        {guestSession.profile?' Your saved guest details have been filled in.':' Complete your guest details with this request.'}
+        {' '}This reservation request will be linked to your verified phone account.
+       </p>}
+       {!guestSession&&<p className={styles.guestNotice}>
+        New guest? Enter your contact details below to request a stay.
+        {' '}<a href="/guest/login?hotel=northwest-290">Sign in by SMS</a> first if you want your details saved for future reservations.
+       </p>}
        <div className={styles.grid}>
          <label>First name<input required maxLength={70} autoComplete="given-name" value={form.firstName} onChange={e=>change('firstName',e.target.value)}/></label>
          <label>Last name<input required maxLength={70} autoComplete="family-name" value={form.lastName} onChange={e=>change('lastName',e.target.value)}/></label>
-         <label>Phone number<input required type="tel" maxLength={30} autoComplete="tel" value={form.phone} onChange={e=>change('phone',e.target.value)} placeholder="(713) 555-0123"/></label>
+         <label>Phone number<input required type="tel" maxLength={30} autoComplete="tel" value={form.phone} disabled={Boolean(guestSession)} onChange={e=>change('phone',e.target.value)} placeholder="(713) 555-0123"/></label>
          <label>Email address<input required type="email" maxLength={160} autoComplete="email" value={form.email} onChange={e=>change('email',e.target.value)} placeholder="guest@example.com"/></label>
        </div>
        <label>Special requests (optional)<textarea rows={3} maxLength={600} value={form.notes} onChange={e=>change('notes',e.target.value)} placeholder="Accessibility requests, expected arrival time, etc."/></label>
        <div aria-hidden="true" className={styles.honeypot}><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={e=>change('website',e.target.value)}/></label></div>
-       <p className={styles.disclaimer}>By submitting, you consent to being contacted about this stay request by phone or email. Please do not enter payment card numbers or government ID information.</p>
+       <p className={styles.disclaimer}>By submitting, you consent to being contacted about this stay request by phone or email. The front desk will verify and scan your government-issued photo ID at check-in according to hotel policy; no ID image or ID number is collected by this website. Please do not enter payment card numbers or ID details here.</p>
        {error&&<p className={styles.error} role="alert">{error}</p>}
        <button className={styles.button} disabled={loading} type="submit">{loading?'Saving request…':'Send reservation request'}</button>
        <p className={styles.fine}>Need immediate assistance? Call the hotel directly at <a href="tel:+17139936567">713-993-6567</a>.</p>
