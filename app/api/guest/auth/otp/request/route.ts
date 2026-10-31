@@ -9,16 +9,27 @@ export async function POST(req:NextRequest){
  const hotelId=typeof data.hotelId==='string'?data.hotelId:'';
  const phone=typeof data.phone==='string'?data.phone.trim():'';
  if(!hotelId||hotelId.length>120||!validPhone(phone))return authError('Select a hotel and enter a valid US phone number.',400);
+ let byIp:boolean,byNumber:boolean;
  try{
   if(!await hotelActive(e.db,hotelId))return authError('Selected hotel is not available.',404);
   const ip=req.headers.get('cf-connecting-ip')||'unknown';
-  const [byIp,byNumber]=await Promise.all([
-   incrementLimit(e.db,e.pepper,'guest-otp-ip:'+ip,10,3600),
-   incrementLimit(e.db,e.pepper,'guest-otp-number:'+hotelId+':'+phone,3,900)
-  ]);
-  if(!byIp||!byNumber)return authError('Too many code requests. Try again later.',429);
+  // D1 rate-limit writes are sequential to avoid competing writes per request.
+  byIp=await incrementLimit(e.db,e.pepper,'guest-otp-ip:'+ip,10,3600);
+  byNumber=await incrementLimit(e.db,e.pepper,'guest-otp-number:'+hotelId+':'+phone,3,900);
+ }catch(error){
+  console.error('[guest-verify] D1 lookup or rate-limit query failed',{type:error instanceof Error?error.name:'unknown'});
+  return authError('Guest login database check failed. Verify migration 009 and the DB binding.',503);
+ }
+ if(!byIp||!byNumber)return authError('Too many code requests. Try again later.',429);
+ try{
   const status=await twilioRequest(e,'Verifications',new URLSearchParams({To:phone,Channel:'sms'}));
-  if(status!=='pending')return authError('Could not send verification. Try again later.',503);
-  return NextResponse.json({ok:true,message:'If SMS delivery is available, a verification code has been sent.'},{headers:guestHeaders});
- }catch{return authError('Unable to send a verification code right now.',503)}
+  if(status!=='pending'){
+   console.error('[guest-verify] unexpected provider verification state');
+   return authError('Twilio did not start the SMS verification. Check Verify logs.',503);
+  }
+  return NextResponse.json({ok:true,message:'A verification code has been requested.'},{headers:guestHeaders});
+ }catch(error){
+  console.error('[guest-verify] SMS request failed',{type:error instanceof Error?error.name:'unknown'});
+  return authError('Twilio could not send the verification code. Check Twilio Verify logs and Cloudflare Worker logs.',503);
+ }
 }
