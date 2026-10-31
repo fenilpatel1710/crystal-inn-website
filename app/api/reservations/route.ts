@@ -1,5 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { NextRequest, NextResponse } from 'next/server';
+import {guestSession} from '../../../lib/guest/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,12 +15,19 @@ interface D1Database {
   batch(statements: D1Statement[]): Promise<unknown[]>;
 }
 const allowedRoomTypes = new Set(['King Non-Smoking', 'King Smoking', 'Queen Non-Smoking', 'No preference']);
-const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\\.[^\s@]+$/;
 const text = (value: unknown, max: number) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const safe = (value: string) => value.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] || c));
 const noStore = {'Cache-Control': 'no-store'};
+const PILOT_HOTEL_ID = 'crystal-inn-northwest-290';
+function usPhoneE164(phone:string) {
+  const digits=phone.replace(/\D/g,'');
+  if(digits.length===10) return '+1'+digits;
+  if(digits.length===11&&digits.startsWith('1')) return '+'+digits;
+  return '';
+}
 function validDate(s: string) {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
   const d = new Date(s+'T12:00:00Z');
   return !Number.isNaN(d.valueOf()) && d.toISOString().slice(0,10) === s;
 }
@@ -46,7 +54,7 @@ export async function POST(request: NextRequest) {
   if (!validDate(v.checkIn) || !validDate(v.checkOut) || v.checkIn < today || nights < 1 || nights > 30 ||
       !allowedRoomTypes.has(v.roomType) || !Number.isInteger(v.rooms) || v.rooms < 1 || v.rooms > 4 ||
       !Number.isInteger(v.guests) || v.guests < 1 || v.guests > 8 ||
-      !v.firstName || !v.lastName || !emailPattern.test(v.email) || v.phone.replace(/\\D/g,'').length < 10) {
+      !v.firstName || !v.lastName || !emailPattern.test(v.email) || !/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(usPhoneE164(v.phone))) {
     return NextResponse.json({error:'Check your dates, room selection and contact information.'},{status:400});
   }
 
@@ -59,6 +67,16 @@ export async function POST(request: NextRequest) {
   } catch {
     console.error('Reservation storage unavailable');
     return NextResponse.json({error:'We cannot store requests right now. Please call 713-993-6567.'},{status:503});
+  }
+
+  // Never link an unverified reservation to an existing guest by phone alone.
+  // OTP-authenticated reservation details may populate only that account's
+  // hotel-scoped portal profile, not an unverified Lumen record.
+  const session=await guestSession(request);
+  const phoneE164=usPhoneE164(v.phone);
+  const portalUserId=session?.hotel_id===PILOT_HOTEL_ID?session.user_id:null;
+  if(portalUserId&&session?.phone_e164!==phoneE164){
+    return NextResponse.json({error:'For your signed-in guest profile, use the mobile number you verified by SMS, or sign out to request for another guest.'},{status:400,headers:noStore});
   }
 
   // A browser-generated key allows safe retries after network interruptions.
@@ -76,7 +94,7 @@ export async function POST(request: NextRequest) {
   const mailId = crypto.randomUUID();
   try {
     // D1 batch is transactional: the request and pending notification are saved together.
-    await db.batch([
+    const writes=[
       db.prepare(`INSERT INTO reservations
         (id,public_reference,idempotency_key,first_name,last_name,phone_e164,email,room_type_label,
          check_in,check_out,rooms_count,guests_count,special_requests,booking_status,lumen_sync_status)
@@ -89,7 +107,22 @@ export async function POST(request: NextRequest) {
         .bind(mailId,id,'reservation_email:'+id),
       db.prepare(`INSERT INTO reservation_audit_log (id,reservation_id,action,actor_type)
         VALUES (?,?,'request_received','guest')`).bind(crypto.randomUUID(),id)
-    ]);
+    ];
+    if(portalUserId){
+      writes.push(
+        db.prepare(`INSERT INTO portal_guest_profiles
+          (portal_user_id,hotel_id,first_name,last_name,email)
+          VALUES (?,?,?,?,?)
+          ON CONFLICT(portal_user_id) DO UPDATE SET
+          first_name=excluded.first_name,last_name=excluded.last_name,
+          email=excluded.email,updated_at=CURRENT_TIMESTAMP`)
+          .bind(portalUserId,PILOT_HOTEL_ID,v.firstName,v.lastName,v.email),
+        db.prepare(`INSERT INTO portal_guest_reservation_links
+          (reservation_id,portal_user_id,hotel_id) VALUES (?,?,?)`)
+          .bind(id,portalUserId,PILOT_HOTEL_ID)
+      );
+    }
+    await db.batch(writes);
   } catch {
     // In a rare race, an identical idempotency key can be inserted by another request.
     if (idempotencyKey) {

@@ -4,7 +4,9 @@ import Link from 'next/link';
 import './guest-login.css';
 
 type Hotel={id:string;slug:string;display_name:string;city:string;region:string};
-type Session={authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string};
+type Session={authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string;
+ profile?:{firstName:string;lastName:string;email:string}|null;
+ profileSetupPending?:boolean;existingPmsLinkVerified?:boolean;pmsConnected?:boolean;};
 type Step='phone'|'code';
 export default function GuestLogin(){
  const [hotels,setHotels]=useState<Hotel[]>([]);
@@ -78,7 +80,19 @@ export default function GuestLogin(){
    {loading?<p>Loading guest access…</p>:session?.authenticated?<section className="ci-guest-card">
     <p className="ci-guest-eyebrow">SIGNED IN</p><h2>Welcome to {session.hotelName}</h2>
     <p>Verified mobile: <strong>{session.phone?.replace(/.(?=.{4})/g,'•')}</strong></p>
-    <div className="ci-guest-pending"><strong>Hotel account verified</strong><p>Reservation history, receipts and reward points will be available once the Lumen connection and guest-ownership verification are approved. No PMS records are shown yet.</p></div>
+    {session.profile?<div className="ci-guest-pending">
+      <strong>Your saved guest details</strong>
+      <p>{session.profile.firstName} {session.profile.lastName}</p>
+      <p>{session.profile.email}</p>
+      <p>These details came from your verified Crystal Inn website reservation request. They are not an unverified Lumen guest profile.</p>
+    </div>:<div className="ci-guest-pending"><strong>Welcome to Crystal Inn</strong>
+      <p>No website profile has been saved yet. Complete your first reservation request to save your contact details for future visits.</p>
+    </div>}
+    <p><Link href="/book">Request a stay / complete guest details</Link></p>
+    <div className="ci-guest-pending"><strong>{session.existingPmsLinkVerified?'Existing PMS guest link verified':'Existing Lumen guest link not verified'}</strong>
+      <p>Lumen stay history, receipts and reward points will appear only after a secure, authorized property integration is live. We will not match or reveal records from a phone number alone.</p>
+      <p>Bring government-issued photo ID to the front desk at check-in for staff verification/scanning. Do not upload an ID on this page.</p>
+    </div>
     <button type="button" onClick={()=>void logout()} disabled={busy}>Sign out</button>
    </section>:<section className="ci-guest-card">
     <form onSubmit={step==='phone'?sendCode:verifyCode}>
