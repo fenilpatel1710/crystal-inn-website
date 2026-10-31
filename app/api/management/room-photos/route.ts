@@ -13,7 +13,7 @@ type R2Bucket={
  delete:(key:string)=>Promise<void>;
 };
 type GalleryRow={id:string;hotel_id:string;room_id:string;asset_id:string;slot:number;created_at:string};
-type MediaAsset={id:string;hotel_id:string;object_key:string;created_at:string;status:'active'|'deleting';assigned_count:number};
+type MediaAsset={id:string;hotel_id:string;object_key:string;created_at:string;status:'uploading'|'active'|'deleting';assigned_count:number};
 function bucket(){return (getCloudflareContext().env as unknown as {HOTEL_MEDIA?:R2Bucket}).HOTEL_MEDIA}
 function photoType(bytes:Uint8Array):{mime:string;ext:string}|null{
  if(bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return {mime:'image/jpeg',ext:'jpg'};
@@ -51,7 +51,7 @@ export async function GET(req:NextRequest){
    // Private library is per hotel; an image may be assigned to more than one room.
    const data=await a.auth.db.prepare(`SELECT a.id,a.hotel_id,a.object_key,a.created_at,a.status,COUNT(g.id) AS assigned_count
     FROM hotel_media_assets a LEFT JOIN hotel_room_gallery g ON g.asset_id=a.id
-    WHERE a.hotel_id=? GROUP BY a.id ORDER BY a.created_at DESC,a.id DESC LIMIT 200`)
+    WHERE a.hotel_id=? AND a.status!='uploading' GROUP BY a.id ORDER BY a.created_at DESC,a.id DESC LIMIT 200`)
     .bind(hotelId).all<MediaAsset>();
    return NextResponse.json({assets:data.results.map(p=>({id:p.id,url:assetUrl(hotelId,p.id,a.scope),assignedCount:p.assigned_count,createdAt:p.created_at,status:p.status}))},{headers:noStore});
   }
@@ -98,7 +98,18 @@ export async function POST(req:NextRequest){
    ]).catch(()=>{});
    return failure('R2 photo upload failed; try again.',503);
   }
-  await a.auth.db.prepare("UPDATE hotel_media_assets SET status='active' WHERE id=? AND hotel_id=? AND status='uploading'").bind(assetId,hotelId).run();
+  try{
+   await a.auth.db.prepare("UPDATE hotel_media_assets SET status='active' WHERE id=? AND hotel_id=? AND status='uploading'")
+    .bind(assetId,hotelId).run();
+  }catch{
+   // Best effort cleanup if D1 failed after a successful R2 put.
+   await media.delete(objectKey).catch(()=>{});
+   await a.auth.db.batch([
+    a.auth.db.prepare('DELETE FROM hotel_room_gallery WHERE id=? AND hotel_id=?').bind(id,hotelId),
+    a.auth.db.prepare('DELETE FROM hotel_media_assets WHERE id=? AND hotel_id=?').bind(assetId,hotelId)
+   ]).catch(()=>{});
+   return failure('Photo could not be published; retry the upload.',503);
+  }
   if(a.scope==='platform')await a.auth.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)')
    .bind(crypto.randomUUID(),a.auth.email,'upload_room_photo',hotelId,roomId+' slot '+slot).run().catch(()=>{});
   return NextResponse.json({ok:true,photo:{id,slot,assetId}},{headers:noStore});
