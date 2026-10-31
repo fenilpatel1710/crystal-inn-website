@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   build:
@@ -25,3 +26,11 @@ jobs:
         run: bun install
       - name: Build Next.js for Cloudflare Workers
         run: bun run build:cloudflare
+      - name: Record build result on the GitHub commit
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RESULT: ${{ job.status }}
+        run: |
+          if [ "$BUILD_RESULT" = "success" ]; then result=success; else result=failure; fi
+          gh api -X POST "repos/${{ github.repository }}/statuses/${{ github.sha }}" -f state="$result" -f context="cloudflare-build-check" -f description="GitHub Actions Cloudflare production build: $BUILD_RESULT"
