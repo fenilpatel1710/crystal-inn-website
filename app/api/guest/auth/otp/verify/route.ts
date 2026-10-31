@@ -13,10 +13,8 @@ export async function POST(req:NextRequest){
  try{
   if(!await hotelActive(e.db,hotelId))return authError('Selected hotel is not available.',404);
   const ip=req.headers.get('cf-connecting-ip')||'unknown';
-  const [byIp,byPhone]=await Promise.all([
-   incrementLimit(e.db,e.pepper,'guest-verify-ip:'+ip,30,3600),
-   incrementLimit(e.db,e.pepper,'guest-verify-number:'+hotelId+':'+phone,6,900)
-  ]);
+  const byIp=await incrementLimit(e.db,e.pepper,'guest-verify-ip:'+ip,30,3600);
+  const byPhone=await incrementLimit(e.db,e.pepper,'guest-verify-number:'+hotelId+':'+phone,6,900);
   if(!byIp||!byPhone)return authError('Too many attempts. Request a new code later.',429);
   const status=await twilioRequest(e,'VerificationCheck',new URLSearchParams({To:phone,Code:code}));
   if(status!=='approved')return authError('Invalid or expired verification code.',401);
