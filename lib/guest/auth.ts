@@ -57,7 +57,17 @@ export async function twilioRequest(e:ReturnType<typeof guestEnv>,endpoint:'Veri
   method:'POST',headers:{Authorization:'Basic '+basic,'Content-Type':'application/x-www-form-urlencoded',Accept:'application/json'},
   body:params.toString(),redirect:'error',cache:'no-store',signal:AbortSignal.timeout(8000)
  });
- if(!response.ok)throw Error('Verification provider unavailable.');
+ if(!response.ok){
+  // Log only non-sensitive diagnostic fields. Never log phone numbers, tokens,
+  // API credentials, message bodies or Twilio's full error description.
+  let code:number|undefined;
+  try{
+   const error=await response.json() as {code?:unknown};
+   if(typeof error.code==='number'&&Number.isInteger(error.code))code=error.code;
+  }catch{}
+  console.error('[guest-verify] provider rejected request',{endpoint,status:response.status,code});
+  throw new Error('Twilio Verify returned HTTP '+response.status);
+ }
  const data=await response.json() as {status?:string};
  return data.status;
 }
