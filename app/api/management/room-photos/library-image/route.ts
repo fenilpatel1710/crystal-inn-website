@@ -17,7 +17,7 @@ export async function GET(req:NextRequest){
  if(!hotelId||!/^[a-zA-Z0-9-]{1,120}$/.test(hotelId)||!/^[a-zA-Z0-9-]{1,120}$/.test(assetId))return missing();
  if(scope==='hotel'&&q.get('hotelId')!==hotelId)return missing();
  try{
-  const asset=await a.db.prepare('SELECT object_key FROM hotel_media_assets WHERE id=? AND hotel_id=? AND status='active'')
+  const asset=await a.db.prepare('SELECT object_key FROM hotel_media_assets WHERE id=? AND hotel_id=? AND status=\'active\'')
    .bind(assetId,hotelId).first<{object_key:string}>();
   if(!asset)return missing();
   const media=(getCloudflareContext().env as unknown as {HOTEL_MEDIA?:Bucket}).HOTEL_MEDIA;
