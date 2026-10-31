@@ -17,7 +17,7 @@ export async function GET(req:NextRequest){
  if(!hotelId||hotelId.length>120||!roomId||roomId.length>120||!photoId||photoId.length>120)return missing();
  if(scope==='hotel'&&q.get('hotelId')!==hotelId)return missing();
  try{
-  const row=await a.db.prepare('SELECT a.object_key FROM hotel_room_gallery g JOIN hotel_media_assets a ON a.id=g.asset_id AND a.hotel_id=g.hotel_id JOIN hotel_room_types r ON r.id=g.room_id AND r.hotel_id=g.hotel_id WHERE g.hotel_id=? AND g.room_id=? AND g.id=? AND a.status='active'').bind(hotelId,roomId,photoId).first<{object_key:string}>();
+  const row=await a.db.prepare('SELECT a.object_key FROM hotel_room_gallery g JOIN hotel_media_assets a ON a.id=g.asset_id AND a.hotel_id=g.hotel_id JOIN hotel_room_types r ON r.id=g.room_id AND r.hotel_id=g.hotel_id WHERE g.hotel_id=? AND g.room_id=? AND g.id=? AND a.status=\'active\'').bind(hotelId,roomId,photoId).first<{object_key:string}>();
   if(!row)return missing();
   const media=(getCloudflareContext().env as unknown as {HOTEL_MEDIA?:Bucket}).HOTEL_MEDIA;
   if(!media)return new NextResponse(null,{status:503,headers});
