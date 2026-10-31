@@ -6,7 +6,7 @@ export async function PUT(req:NextRequest){
  const a=await authorize(req,'platform');if(a instanceof NextResponse)return a;
  let b:Record<string,unknown>;try{b=await req.json()}catch{return NextResponse.json({error:'Invalid input.'},{status:400,headers:noStore})}
  const managerId=String(b.managerId||''),action=String(b.action||''),password=String(b.password||'');
- if(managerId.length<8||managerId.length>100||!['suspend','activate','reset_password'].includes(action))
+ if(managerId.length<8||managerId.length>100||!['suspend','activate','reset_password','unlock'].includes(action))
  return NextResponse.json({error:'Invalid manager request.'},{status:400,headers:noStore});
  try{
  const manager=await a.db.prepare('SELECT id,status FROM hotel_admin_users WHERE id=?').bind(managerId).first();
@@ -15,8 +15,16 @@ export async function PUT(req:NextRequest){
   if(password.length<16||password.length>128)return NextResponse.json({error:'Password must contain 16–128 characters.'},{status:400,headers:noStore});
   const salt=randomBytes(16).toString('hex'),hashed='scrypt:'+salt+':'+scryptSync(password,salt,64).toString('hex');
   await a.db.prepare('UPDATE hotel_admin_users SET password_hash=?,session_version=session_version+1,credentials_changed_at=CURRENT_TIMESTAMP WHERE id=?').bind(hashed,managerId).run();
+ }else if(action==='unlock'){
+  // Rotate session version to clear all version-scoped login lockouts,
+  // revoke older sessions, and revoke outstanding password reset links.
+  await a.db.batch([
+   a.db.prepare('UPDATE hotel_admin_users SET session_version=session_version+1 WHERE id=?').bind(managerId),
+   a.db.prepare('DELETE FROM manager_password_reset_tokens WHERE manager_id=?').bind(managerId)
+  ]);
  }else{
-  await a.db.prepare('UPDATE hotel_admin_users SET status=? WHERE id=?').bind(action==='activate'?'active':'suspended',managerId).run();
+  // Suspend/reactivate should also invalidate older sessions.
+  await a.db.prepare('UPDATE hotel_admin_users SET status=?,session_version=session_version+1 WHERE id=?').bind(action==='activate'?'active':'suspended',managerId).run();
  }
  await a.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,manager_id) VALUES(?,?,?,?)').bind(crypto.randomUUID(),a.email,action+'_manager',managerId).run();
  return NextResponse.json({ok:true},{headers:noStore})
