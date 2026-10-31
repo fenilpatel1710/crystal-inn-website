@@ -21,3 +21,10 @@
 .ci-review-heading{margin:25px 0 14px}.ci-review-signin{padding:15px;background:#edf5ff}
 .ci-review-notice{color:#16643e}.ci-review-error{color:#a82929}
 @media(max-width:640px){.ci-feature-list,.ci-review-sources{grid-template-columns:1fr}.ci-review-form{padding:18px}}
+
+.ci-google-reviews{margin:30px 0 36px}.ci-review-google-attribution{font-size:12px;color:#60758c}
+.ci-google-review-author{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:14px}
+.ci-google-review-author img{border-radius:50%;object-fit:cover}
+.ci-google-review-author span{margin-left:auto;font-size:11px;color:#687a8a}
+.ci-google-reviews a{color:#19558f;font-size:13px}
+.ci-google-reviews .ci-review-list article{background:#f8fafc}
