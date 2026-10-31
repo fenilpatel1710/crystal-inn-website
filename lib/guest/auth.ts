@@ -55,8 +55,14 @@ export async function twilioRequest(e:ReturnType<typeof guestEnv>,endpoint:'Veri
  const basic=Buffer.from(e.apiKey+':'+e.apiSecret).toString('base64');
  const response=await fetch(url,{
   method:'POST',headers:{Authorization:'Basic '+basic,'Content-Type':'application/x-www-form-urlencoded',Accept:'application/json'},
-  body:params.toString(),redirect:'error',cache:'no-store',signal:AbortSignal.timeout(8000)
+  // Workers does not support redirect: 'error'; that option throws a TypeError
+  // before Twilio receives any request. Use manual handling and reject 3xx.
+  body:params.toString(),redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(8000)
  });
+ if(response.status>=300&&response.status<400){
+  console.error('[guest-verify] unexpected Twilio redirect',{endpoint,status:response.status});
+  throw new Error('Twilio Verify unexpectedly redirected the request.');
+ }
  if(!response.ok){
   // Log only non-sensitive diagnostic fields. Never log phone numbers, tokens,
   // API credentials, message bodies or Twilio's full error description.
