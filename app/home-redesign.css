@@ -543,3 +543,58 @@
 .ci-site .ci-nav-guest:hover{background:#d9eaff}
 .ci-property-topnav .ci-property-nav-guest{border:1px solid #acc5df;border-radius:4px;padding:11px 13px;color:#15518c;text-decoration:none;font-weight:800}
 @media(max-width:720px){.ci-property-topnav .ci-property-nav-guest{font-size:11px;padding:9px 10px}}
+
+
+/* Property detail tab navigation: one section at a time with a full panel border. */
+.ci-property-page .ci-property-quickbar{background:#fff;border-bottom:0;padding-top:22px}
+.ci-property-page .ci-property-quickbar>.ci-shell{
+ display:flex;align-items:flex-end;gap:8px;flex-wrap:nowrap;
+ overflow-x:auto;scrollbar-width:thin;
+}
+.ci-property-page .ci-property-quickbar button{
+ position:relative;display:block;flex-shrink:0;min-height:54px;
+ padding:16px 23px;border:2px solid transparent;border-bottom:0;
+ border-radius:8px 8px 0 0;background:transparent;
+ color:#325577;font:800 13px/1.4 Arial,Helvetica,sans-serif;
+ cursor:pointer;white-space:nowrap;
+}
+.ci-property-page .ci-property-quickbar button:hover{background:#eef5fd;color:#0d4479}
+.ci-property-page .ci-property-quickbar button.is-active{
+ color:#0d3969;border-color:#225e96;background:#fff;
+ box-shadow:inset 0 4px 0 #225e96;
+}
+.ci-property-page .ci-property-quickbar button:focus-visible{
+ outline:3px solid #306fb2;outline-offset:-4px;
+}
+.ci-property-page .ci-property-tab-frame{
+ max-width:1260px;padding:0!important;
+ border:2px solid #225e96;border-radius:0 8px 8px 8px;
+ overflow:hidden;background:#fff;
+ box-shadow:0 16px 40px rgba(13,54,95,.08);
+ margin-bottom:65px;
+}
+.ci-property-page .ci-property-tab-frame>.ci-property-section{
+ padding:74px 0;min-height:390px;max-width:100%;
+}
+.ci-property-page .ci-property-tab-frame>.ci-property-section>.ci-shell{
+ width:100%;max-width:none;min-width:0;
+ padding-left:clamp(20px,4vw,54px);
+ padding-right:clamp(20px,4vw,54px);
+}
+.ci-property-page .ci-property-tab-frame .ci-property-about{
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8%;
+}
+.ci-property-page .ci-property-tab-frame .ci-property-about>div,
+.ci-property-page .ci-property-tab-frame .ci-property-section-heading>div,
+.ci-property-page .ci-property-tab-frame .ci-property-room-card{min-width:0}
+.ci-property-page .ci-property-tab-frame p,
+.ci-property-page .ci-property-tab-frame h2{overflow-wrap:break-word}
+@media(max-width:720px){
+ .ci-property-page .ci-property-quickbar{padding-top:12px}
+ .ci-property-page .ci-property-quickbar>.ci-shell{padding-right:14px;padding-left:14px;gap:4px}
+ .ci-property-page .ci-property-quickbar button{font-size:12px;padding:13px 15px;min-height:48px}
+ .ci-property-page .ci-property-tab-frame{margin-bottom:35px;border-radius:0 0 8px 8px}
+ .ci-property-page .ci-property-tab-frame>.ci-property-section{padding:38px 0;min-height:330px}
+ .ci-property-page .ci-property-tab-frame>.ci-property-section>.ci-shell{padding:0 20px}
+ .ci-property-page .ci-property-tab-frame .ci-property-about{grid-template-columns:minmax(0,1fr);gap:18px}
+}
