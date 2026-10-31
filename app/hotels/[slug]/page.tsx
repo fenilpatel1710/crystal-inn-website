@@ -8,7 +8,8 @@ type Hotel={
  description?:string|null;public_phone?:string|null;public_email?:string|null;hero_image_url?:string|null;
  is_legacy_booking?:boolean;rewards_enabled?:number;
 };
-type Room={id:string;display_name:string;description:string|null;image_url?:string|null;starting_rate_cents?:number|null};
+type RoomPhoto={id:string;slot:number;url:string};
+type Room={id:string;display_name:string;description:string|null;image_url?:string|null;starting_rate_cents?:number|null;photos?:RoomPhoto[]};
 function ImageWithFallback({src,alt,className}:{src:string|null|undefined;alt:string;className?:string}){
  const [broken,setBroken]=useState(false);
  useEffect(()=>setBroken(false),[src]);
@@ -60,7 +61,8 @@ export default function HotelPage(){
  <section className="ci-property-section ci-property-rooms-section" id="accommodations"><div className="ci-shell">
  <div className="ci-property-section-heading"><div><p className="ci-eyebrow">02 / ACCOMMODATIONS</p><h2>Find your kind<br/>of comfort.</h2></div><p>Explore the room categories currently listed for this property. Photos and descriptions are maintained by the hotel team.</p></div>
  {rooms.length?<div className="ci-property-room-grid">{rooms.map(room=><article className="ci-property-room-card" key={room.id}>
-  <div className="ci-property-room-image"><ImageWithFallback src={room.image_url} alt={room.display_name+' room'}/>{room.image_url&&<button type="button" onClick={()=>setPhoto({url:room.image_url!,alt:room.display_name})}>View photo ↗</button>}</div>
+  <div className="ci-property-room-image"><ImageWithFallback src={room.photos?.[0]?.url||room.image_url} alt={room.display_name+' room'}/>{(room.photos?.[0]?.url||room.image_url)&&<button type="button" onClick={()=>setPhoto({url:(room.photos?.[0]?.url||room.image_url)!,alt:room.display_name})}>View photo ↗</button>}</div>
+  {room.photos&&room.photos.length>0&&<div className="ci-property-room-thumbnails" aria-label={room.display_name+' photo gallery'}>{room.photos.map((p,i)=><button key={p.id} type="button" onClick={()=>setPhoto({url:p.url,alt:room.display_name+' photo '+(i+1)})} aria-label={'View '+room.display_name+' photo '+(i+1)}><img src={p.url} alt={room.display_name+' photo '+(i+1)} loading="lazy"/><span>{i+1} of {room.photos?.length}</span></button>)}</div>}
   <div className="ci-property-room-info"><span className="ci-property-card-kicker">ROOM TYPE</span><h3>{room.display_name}</h3>{room.starting_rate_cents!=null&&<p className="ci-property-room-rate"><strong>{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(room.starting_rate_cents/100)}</strong><span> / night · starting rate</span></p>}<p>{room.description?.trim()||'Contact the property for room details, amenities and availability.'}</p><a href={requestUrl}>Request this hotel →</a><small className="ci-property-rate-disclaimer">Rates are indicative; taxes, fees and availability require confirmation.</small></div>
  </article>)}</div>:<div className="ci-property-no-rooms"><div><span className="ci-property-card-kicker">ROOMS & ACCOMMODATIONS</span><h3>Let's find the right room for you.</h3><p>Online room details are being prepared for this property. You can still contact the hotel to ask about room types, rates and availability.</p><a href={guestInquiryUrl} className="ci-btn ci-btn-blue">Ask about rooms →</a></div></div>}
  </div></section>
