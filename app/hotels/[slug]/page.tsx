@@ -58,7 +58,7 @@ export default function HotelPage(){
   .finally(()=>{if(active)setLoading(false)});
   return()=>{active=false};
  },[slug]);
- useEffect(()=>{if(!photo)return;const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setPhoto(null)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[photo]);
+ useEffect(()=>{if(!photo)return;const close=(e:globalThis.KeyboardEvent)=>{if(e.key==='Escape')setPhoto(null)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[photo]);
  const requestUrl=hotel?'/request-stay?'+new URLSearchParams({hotel:hotel.slug,...(checkIn?{checkIn}:{}),...(checkOut?{checkOut}:{}),guests}).toString():'/request-stay';
  const guestInquiryUrl=hotel?'/contact?hotel='+encodeURIComponent(hotel.id):'/contact';
  const address=hotel?.address_text?.trim()||'';
