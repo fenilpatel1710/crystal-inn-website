@@ -10,9 +10,10 @@ const MAX_BYTES=5*1024*1024;
 
 type R2Bucket={
  put:(key:string,body:ArrayBuffer,options:{httpMetadata:{contentType:string}})=>Promise<unknown>;
+ delete:(key:string)=>Promise<void>;
 };
 type GalleryRow={id:string;hotel_id:string;room_id:string;asset_id:string;slot:number;created_at:string};
-type MediaAsset={id:string;hotel_id:string;object_key:string;created_at:string;assigned_count:number};
+type MediaAsset={id:string;hotel_id:string;object_key:string;created_at:string;status:'active'|'deleting';assigned_count:number};
 function bucket(){return (getCloudflareContext().env as unknown as {HOTEL_MEDIA?:R2Bucket}).HOTEL_MEDIA}
 function photoType(bytes:Uint8Array):{mime:string;ext:string}|null{
  if(bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return {mime:'image/jpeg',ext:'jpg'};
@@ -48,11 +49,11 @@ export async function GET(req:NextRequest){
  try{
   if(req.nextUrl.searchParams.get('library')==='1'){
    // Private library is per hotel; an image may be assigned to more than one room.
-   const data=await a.auth.db.prepare(`SELECT a.id,a.hotel_id,a.object_key,a.created_at,COUNT(g.id) AS assigned_count
+   const data=await a.auth.db.prepare(`SELECT a.id,a.hotel_id,a.object_key,a.created_at,a.status,COUNT(g.id) AS assigned_count
     FROM hotel_media_assets a LEFT JOIN hotel_room_gallery g ON g.asset_id=a.id
     WHERE a.hotel_id=? GROUP BY a.id ORDER BY a.created_at DESC,a.id DESC LIMIT 200`)
     .bind(hotelId).all<MediaAsset>();
-   return NextResponse.json({assets:data.results.map(p=>({id:p.id,url:assetUrl(hotelId,p.id,a.scope),assignedCount:p.assigned_count,createdAt:p.created_at}))},{headers:noStore});
+   return NextResponse.json({assets:data.results.map(p=>({id:p.id,url:assetUrl(hotelId,p.id,a.scope),assignedCount:p.assigned_count,createdAt:p.created_at,status:p.status}))},{headers:noStore});
   }
   const roomId=req.nextUrl.searchParams.get('roomId')||'';
   if(!validId(roomId)||!await hasRoom(a.auth.db,hotelId,roomId))return failure('Room type does not belong to this hotel.',404);
@@ -112,15 +113,21 @@ export async function PUT(req:NextRequest){
  if(a.scope==='hotel'&&requestedHotel!==hotelId)return failure('Wrong property.',403);
  try{
   if(!await hasRoom(a.auth.db,hotelId,roomId))return failure('Room does not belong to hotel.',404);
-  const asset=await a.auth.db.prepare('SELECT id FROM hotel_media_assets WHERE id=? AND hotel_id=?').bind(assetId,hotelId).first();
+  const asset=await a.auth.db.prepare("SELECT id FROM hotel_media_assets WHERE id=? AND hotel_id=? AND status='active'").bind(assetId,hotelId).first();
   if(!asset)return failure('The selected photo is not in this hotel library.',404);
   const assigned=await a.auth.db.prepare('SELECT slot,asset_id FROM hotel_room_gallery WHERE room_id=? AND hotel_id=?')
    .bind(roomId,hotelId).all<{slot:number;asset_id:string}>();
   if(assigned.results.some(p=>p.asset_id===assetId))return failure('This photo is already assigned to this room.',409);
   const slot=[1,2,3].find(n=>!assigned.results.some(p=>p.slot===n));
   if(!slot)return failure('Room already has 3 photos.',409);
-  await a.auth.db.prepare('INSERT INTO hotel_room_gallery(id,hotel_id,room_id,asset_id,slot) VALUES(?,?,?,?,?)')
-   .bind(crypto.randomUUID(),hotelId,roomId,assetId,slot).run();
+  // The SELECT checks live asset status at insertion time; a simultaneous permanent
+  // delete can never turn a new room reference into a broken image.
+  await a.auth.db.prepare(`INSERT INTO hotel_room_gallery(id,hotel_id,room_id,asset_id,slot)
+   SELECT ?,?,?,id,? FROM hotel_media_assets WHERE id=? AND hotel_id=? AND status='active'`)
+   .bind(crypto.randomUUID(),hotelId,roomId,slot,assetId,hotelId).run();
+  const inserted=await a.auth.db.prepare('SELECT id FROM hotel_room_gallery WHERE hotel_id=? AND room_id=? AND asset_id=?')
+   .bind(hotelId,roomId,assetId).first();
+  if(!inserted)return failure('Photo was removed from the library; refresh and choose another.',409);
   if(a.scope==='platform')await a.auth.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)')
    .bind(crypto.randomUUID(),a.auth.email,'reuse_room_photo',hotelId,roomId+' slot '+slot).run().catch(()=>{});
   return NextResponse.json({ok:true,slot},{headers:noStore});
@@ -130,7 +137,45 @@ export async function PUT(req:NextRequest){
 export async function DELETE(req:NextRequest){
  const a=await access(req);if(a instanceof NextResponse)return a;
  let body:Record<string,unknown>;try{body=await req.json()}catch{return failure('Invalid request.',400)}
- const requestedHotel=String(body.hotelId||''),roomId=String(body.roomId||''),photoId=String(body.photoId||'');
+ const requestedHotel=String(body.hotelId||'');
+ if(body.action==='delete_asset'){
+  const hotelId=a.scope==='hotel'?a.auth.hotelId:requestedHotel;
+  const assetId=String(body.assetId||'');
+  if(!validId(hotelId||'')||!validId(assetId))return failure('Select a valid library photo.',400);
+  if(a.scope==='hotel'&&requestedHotel!==hotelId)return failure('Wrong property.',403);
+  const media=bucket();if(!media)return failure('Private R2 binding missing.',503);
+  try{
+   const row=await a.auth.db.prepare(`SELECT id,object_key,status,
+    (SELECT COUNT(*) FROM hotel_room_gallery WHERE asset_id=? AND hotel_id=?) AS assigned_count
+    FROM hotel_media_assets WHERE id=? AND hotel_id=?`)
+    .bind(assetId,hotelId,assetId,hotelId)
+    .first<{id:string;object_key:string;status:'active'|'deleting';assigned_count:number}>();
+   if(!row)return failure('Photo is no longer in this hotel library.',404);
+   if(row.assigned_count>0)return failure('Remove this photo from all room galleries before deleting its stored file.',409);
+   if(row.status==='active'){
+    await a.auth.db.prepare(`UPDATE hotel_media_assets SET status='deleting'
+     WHERE id=? AND hotel_id=? AND status='active'
+     AND NOT EXISTS(SELECT 1 FROM hotel_room_gallery WHERE asset_id=? AND hotel_id=?)`)
+     .bind(assetId,hotelId,assetId,hotelId).run();
+   }
+   const pending=await a.auth.db.prepare('SELECT object_key,status FROM hotel_media_assets WHERE id=? AND hotel_id=?')
+    .bind(assetId,hotelId).first<{object_key:string;status:string}>();
+   if(!pending||pending.status!=='deleting')return failure('Photo is in use or already deleted. Refresh the library.',409);
+   try{await media.delete(pending.object_key)}
+   catch{return failure('R2 deletion failed. The photo is disabled; use Retry deletion to finish deleting its stored file.',503)}
+   // Purge legacy imported metadata too, so the image cannot reappear in
+   // a one-time migration recovery or be mistakenly counted as active.
+   await a.auth.db.batch([
+    a.auth.db.prepare('DELETE FROM hotel_room_photos WHERE id=? AND hotel_id=?').bind(assetId,hotelId),
+    a.auth.db.prepare("DELETE FROM hotel_media_assets WHERE id=? AND hotel_id=? AND status='deleting' AND NOT EXISTS(SELECT 1 FROM hotel_room_gallery WHERE asset_id=?)")
+     .bind(assetId,hotelId,assetId)
+   ]);
+   if(a.scope==='platform')await a.auth.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id,details) VALUES(?,?,?,?,?)')
+    .bind(crypto.randomUUID(),a.auth.email,'permanent_delete_room_photo',hotelId,'Asset '+assetId).run().catch(()=>{});
+   return NextResponse.json({ok:true,message:'Photo permanently deleted from the hotel library and R2 storage.'},{headers:noStore});
+  }catch{return failure('Cleanup is incomplete. Refresh the library and retry permanent deletion.',503)}
+ }
+ const roomId=String(body.roomId||''),photoId=String(body.photoId||'');
  const hotelId=a.scope==='hotel'?a.auth.hotelId:requestedHotel;
  if(!hotelId||!validId(hotelId)||!validId(roomId)||!validId(photoId))return failure('Select a valid photo.',400);
  if(a.scope==='hotel'&&requestedHotel!==hotelId)return failure('Wrong property.',403);
