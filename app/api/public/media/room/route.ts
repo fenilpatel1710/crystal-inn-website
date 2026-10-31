@@ -20,7 +20,7 @@ export async function GET(req:NextRequest){
     JOIN hotel_media_assets a ON a.id=p.asset_id AND a.hotel_id=p.hotel_id
     JOIN hotel_room_types r ON r.id=p.room_id AND r.hotel_id=p.hotel_id AND r.is_active=1
     JOIN hotels h ON h.id=p.hotel_id AND h.status='active' AND h.archived_at IS NULL
-    WHERE p.id=? AND p.room_id=?`).bind(photoId,roomId).first<{object_key:string}>();
+    WHERE p.id=? AND p.room_id=? AND a.status='active'`).bind(photoId,roomId).first<{object_key:string}>();
   if(!row)return new NextResponse(null,{status:404,headers:denied});
   const image=await media.get(row.object_key);
   const type=image?.httpMetadata?.contentType||'';
