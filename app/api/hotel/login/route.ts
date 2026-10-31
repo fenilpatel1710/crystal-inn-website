@@ -10,7 +10,11 @@ export async function POST(req:NextRequest){
  try{const b=JSON.parse(raw);email=String(b.email||'').trim().toLowerCase();password=String(b.password||'');hotelId=String(b.hotelId||'')}catch{return NextResponse.json({error:'Invalid input'},{status:400,headers:noStore})}
  if(!email||!hotelId||password.length>128)return NextResponse.json({error:'Invalid credentials.'},{status:401,headers:noStore});
  try{
- const key=createHash('sha256').update(e.secret+':hotel:'+String(req.headers.get('cf-connecting-ip')||'unknown')+':'+email).digest('hex');
+ // Include the account's session version in the rate-limit key. A platform-admin
+ // unlock rotates that version, clearing all per-IP lockouts without knowing the IP.
+ const account=await e.db.prepare("SELECT session_version FROM hotel_admin_users WHERE email=? AND status='active'")
+  .bind(email).first<{session_version:number}>();
+ const key=createHash('sha256').update(e.secret+':hotel:'+String(req.headers.get('cf-connecting-ip')||'unknown')+':'+email+':'+String(account?.session_version??0)).digest('hex');
  const now=Math.floor(Date.now()/1000);
  const attempt=await e.db.prepare('SELECT window_start,failed_attempts,locked_until FROM admin_login_attempts WHERE client_key=?').bind(key).first<{window_start:number;failed_attempts:number;locked_until:number}>();
  if(attempt&&attempt.locked_until>now)return NextResponse.json({error:'Too many attempts. Try again later.'},{status:429,headers:noStore});
@@ -33,6 +37,10 @@ export async function POST(req:NextRequest){
  return NextResponse.json({error:'Invalid hotel or login credentials.'},{status:401,headers:noStore});
  }
  await e.db.prepare('DELETE FROM admin_login_attempts WHERE client_key=?').bind(key).run();
+ // Record successful hotel-admin sign-ins for the Super Admin account activity log.
+ // Login must still succeed if optional audit logging is unavailable.
+ await e.db.prepare('INSERT INTO platform_admin_audit(id,actor_email,action,hotel_id) VALUES(?,?,?,?)')
+  .bind(crypto.randomUUID(),email,'hotel_admin_sign_in',hotelId).run().catch(()=>{});
  const r=NextResponse.json({ok:true},{headers:noStore});
  r.cookies.set(HOTEL_COOKIE,await makeToken(e.secret,{sub:email,role:'property_admin',hotelId,sessionVersion:row.session_version}),{httpOnly:true,secure:true,sameSite:'strict',maxAge:3600,path:'/'});
  return r;
