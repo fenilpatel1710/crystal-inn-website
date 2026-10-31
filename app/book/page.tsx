@@ -16,19 +16,27 @@ const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return [d.getFul
 export default function BookPage(){
  const [form,setForm]=useState<BookingForm>(blank);
  const [guestSession,setGuestSession]=useState<GuestSession|null>(null);
+ const [guestStatus,setGuestStatus]=useState<'checking'|'verified'|'signedOut'|'unavailable'>('checking');
  useEffect(()=>{
   let mounted=true;
-  fetch('/api/guest/me',{cache:'no-store'}).then(r=>r.json()).then((session:GuestSession)=>{
-   if(!mounted||!session.authenticated||session.hotelId!=='crystal-inn-northwest-290')return;
-   setGuestSession(session);
-   setForm(prev=>({
-    ...prev,
-    phone:prev.phone||session.phone||'',
-    firstName:prev.firstName||session.profile?.firstName||'',
-    lastName:prev.lastName||session.profile?.lastName||'',
-    email:prev.email||session.profile?.email||''
-   }));
-  }).catch(()=>{});
+  fetch('/api/guest/me',{cache:'no-store'})
+   .then(async r=>{if(!r.ok)throw Error('session check failed');return r.json() as Promise<GuestSession>})
+   .then(session=>{
+    if(!mounted)return;
+    if(!session.authenticated||session.hotelId!=='crystal-inn-northwest-290'){
+      setGuestStatus('signedOut');return;
+    }
+    setGuestSession(session);
+    setGuestStatus('verified');
+    setForm(prev=>({
+     ...prev,
+     phone:session.phone||prev.phone,
+     firstName:prev.firstName||session.profile?.firstName||'',
+     lastName:prev.lastName||session.profile?.lastName||'',
+     email:prev.email||session.profile?.email||''
+    }));
+   })
+   .catch(()=>{if(mounted)setGuestStatus('unavailable')});
   return ()=>{mounted=false};
  },[]);
  useEffect(()=>{const params=new URLSearchParams(window.location.search);const allowed=new Set(['King Non-Smoking','King Smoking','Queen Non-Smoking','No preference']);setForm(prev=>({...prev,checkIn:/^\d{4}-\d{2}-\d{2}$/.test(params.get('checkIn')||'')?params.get('checkIn')!:prev.checkIn,checkOut:/^\d{4}-\d{2}-\d{2}$/.test(params.get('checkOut')||'')?params.get('checkOut')!:prev.checkOut,roomType:allowed.has(params.get('roomType')||'')?params.get('roomType')!:prev.roomType,guests:/^[1-8]$/.test(params.get('guests')||'')?params.get('guests')!:prev.guests}));},[]);
@@ -72,9 +80,16 @@ export default function BookPage(){
         {guestSession.profile?' Your saved guest details have been filled in.':' Complete your guest details with this request.'}
         {' '}This reservation request will be linked to your verified phone account.
        </p>}
-       {!guestSession&&<p className={styles.guestNotice}>
-        New guest? Enter your contact details below to request a stay.
-        {' '}<a href="/guest/login?hotel=northwest-290">Sign in by SMS</a> first if you want your details saved for future reservations.
+       {guestStatus==='checking'&&<p className={styles.guestNotice} role="status">Checking your guest sign-in…</p>}
+       {guestStatus==='signedOut'&&<p className={styles.guestNotice}>
+        You are not signed in to a verified Crystal Inn guest account.
+        {' '}<a href="/guest/login?hotel=northwest-290">Sign in and enter your SMS verification code</a> to save your contact details for future stays.
+        You can also submit this request as a new guest without an account.
+       </p>}
+       {guestStatus==='unavailable'&&<p className={styles.guestNotice} role="status">
+        We couldn't check your guest sign-in status. You may submit a reservation request,
+        but contact details might not be saved to a guest account.
+        {' '}<a href="/guest/login?hotel=northwest-290">Check guest sign-in</a>.
        </p>}
        <div className={styles.grid}>
          <label>First name<input required maxLength={70} autoComplete="given-name" value={form.firstName} onChange={e=>change('firstName',e.target.value)}/></label>
