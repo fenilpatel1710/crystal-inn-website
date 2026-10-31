@@ -1,0 +1,30 @@
+.ci-feature-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 16px;margin:15px 0}
+.ci-feature-row{display:flex;align-items:baseline;gap:8px;font:500 12px/1.5 Arial,sans-serif;color:#63778c}
+.ci-feature-row.is-offered{color:#183e65}
+.ci-feature-check{width:16px;height:16px;flex:0 0 16px;display:inline-flex;justify-content:center;align-items:center;border:1px solid #c2cfdb;border-radius:3px;color:#176e46;font-size:13px;font-weight:800}
+.ci-feature-row.is-offered .ci-feature-check{background:#e5f5eb;border-color:#9bcab0}
+.ci-feature-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.ci-review-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:22px 0 30px}
+.ci-review-score{border:1px solid #d6e4ee;border-radius:8px;padding:22px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;background:#f7fbfe}
+.ci-review-score strong{font-size:17px;color:#1c4169}.ci-review-score small{color:#586e83;font-size:12px}
+.ci-review-score a{font-size:13px;color:#1d5595;font-weight:700}
+.ci-review-number{font-size:32px;font-weight:800;color:#163b60}
+.ci-review-google-button,.ci-review-form button{background:#173d70;color:white!important;padding:11px 18px;border-radius:5px;text-decoration:none;border:0;cursor:pointer}
+.ci-reviews-wrap{max-width:100%;color:#254562}
+.ci-review-form{border:1px solid #dae5ee;padding:24px;margin:28px 0;display:flex;flex-direction:column;align-items:flex-start;gap:15px;border-radius:7px}
+.ci-review-form label{display:flex;flex-direction:column;gap:7px;width:100%;font-weight:700}
+.ci-review-form select,.ci-review-form textarea{width:100%;padding:12px;background:#fff;border:1px solid #adbfcd;border-radius:5px;font-size:14px;color:#1c3854}
+.ci-review-form small{font-size:12px;color:#65758a}.ci-review-list{display:grid;gap:13px}
+.ci-review-list article{padding:20px;border:1px solid #d7e3ef;border-radius:6px}
+.ci-review-list article strong{color:#d29a18}.ci-review-list article small{display:block;color:#718196;margin:5px 0}
+.ci-review-list p{white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:0}
+.ci-review-heading{margin:25px 0 14px}.ci-review-signin{padding:15px;background:#edf5ff}
+.ci-review-notice{color:#16643e}.ci-review-error{color:#a82929}
+@media(max-width:640px){.ci-feature-list,.ci-review-sources{grid-template-columns:1fr}.ci-review-form{padding:18px}}
+
+.ci-google-reviews{margin:30px 0 36px}.ci-review-google-attribution{font-size:12px;color:#60758c}
+.ci-google-review-author{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:14px}
+.ci-google-review-author img{border-radius:50%;object-fit:cover}
+.ci-google-review-author span{margin-left:auto;font-size:11px;color:#687a8a}
+.ci-google-reviews a{color:#19558f;font-size:13px}
+.ci-google-reviews .ci-review-list article{background:#f8fafc}
