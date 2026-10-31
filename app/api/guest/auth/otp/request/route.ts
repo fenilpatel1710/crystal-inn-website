@@ -3,7 +3,19 @@ import {guestEnv,guestConfigured,sameOrigin,validPhone,hotelActive,incrementLimi
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function POST(req:NextRequest){
  if(!sameOrigin(req))return authError('Invalid request origin.',403);
- const e=guestEnv();if(!guestConfigured(e)||!e.db)return authError('Guest sign-in is not available yet. SMS verification must be configured.',503);
+ const e=guestEnv();
+ if(!guestConfigured(e)||!e.db){
+  // Diagnostic flags only: never print SID, keys, pepper, phone or request payload.
+  console.error('[guest-verify] configuration validation failed',{
+   dbBindingPresent:Boolean(e.db),
+   guestOtpEnabled:e.enabled,
+   verifyServiceSidFormatValid:/^VA[0-9a-f]{32}$/i.test(e.service),
+   apiKeyPresent:Boolean(e.apiKey),
+   apiSecretPresent:Boolean(e.apiSecret),
+   authPepperLengthValid:e.pepper.length>=32
+  });
+  return authError('Guest sign-in is not available yet. SMS verification must be configured.',503);
+ }
  let data:{hotelId?:unknown;phone?:unknown};
  try{if(Number(req.headers.get('content-length')||0)>1000)return authError('Invalid request.',400);data=await req.json()}catch{return authError('Invalid request.',400)}
  const hotelId=typeof data.hotelId==='string'?data.hotelId:'';
