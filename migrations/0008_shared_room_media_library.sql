@@ -30,11 +30,19 @@ CREATE INDEX IF NOT EXISTS idx_room_gallery_hotel_room
 CREATE INDEX IF NOT EXISTS idx_room_gallery_asset
   ON hotel_room_gallery(asset_id);
 
+CREATE TABLE IF NOT EXISTS hotel_media_migration_state (id TEXT PRIMARY KEY);
+
+-- Backfill only once: rerunning this migration must not restore photos
+-- deliberately removed from room assignments after the initial migration.
 -- Preserve existing images and their room-specific slot and photo IDs.
 INSERT OR IGNORE INTO hotel_media_assets(id, hotel_id, object_key, created_at)
-  SELECT id, hotel_id, object_key, created_at FROM hotel_room_photos;
+  SELECT id, hotel_id, object_key, created_at FROM hotel_room_photos
+  WHERE NOT EXISTS(SELECT 1 FROM hotel_media_migration_state WHERE id='0008_backfill');
 
 INSERT OR IGNORE INTO hotel_room_gallery(id, hotel_id, room_id, asset_id, slot, created_at)
   SELECT p.id, p.hotel_id, p.room_id, a.id, p.slot, p.created_at
   FROM hotel_room_photos p
-  JOIN hotel_media_assets a ON a.object_key=p.object_key AND a.hotel_id=p.hotel_id;
+  JOIN hotel_media_assets a ON a.object_key=p.object_key AND a.hotel_id=p.hotel_id
+  WHERE NOT EXISTS(SELECT 1 FROM hotel_media_migration_state WHERE id='0008_backfill');
+
+INSERT OR IGNORE INTO hotel_media_migration_state(id) VALUES ('0008_backfill');
