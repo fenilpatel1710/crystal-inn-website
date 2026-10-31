@@ -9,9 +9,14 @@ export const guestHeaders={'Cache-Control':'no-store'};
 export function guestEnv(){
  const env=getCloudflareContext().env as unknown as Record<string,unknown>;
  const get=(key:string)=>typeof env[key]==='string'?env[key] as string:'';
+ // Cloudflare variables may be JSON booleans rather than text strings.
+ // Only an explicit true enables SMS (never treat a nonempty 'false' as true).
+ const rawOtpEnabled=env.GUEST_OTP_ENABLED;
+ const enabled=rawOtpEnabled===true||
+  (typeof rawOtpEnabled==='string'&&rawOtpEnabled.trim().toLowerCase()==='true');
  return {
   db:env.DB as DB|undefined,
-  enabled:get('GUEST_OTP_ENABLED')==='true',
+  enabled,
   service:get('TWILIO_VERIFY_SERVICE_SID'),
   apiKey:get('TWILIO_API_KEY'),
   apiSecret:get('TWILIO_API_SECRET'),
