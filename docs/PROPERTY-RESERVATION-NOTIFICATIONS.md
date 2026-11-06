@@ -8,6 +8,7 @@
 - Submission saves three independent notification intentions, atomically with the website request: property email, guest email, and optionally opted-in guest SMS.
 - Property inbox is `hotel_reservation_settings.booking_notification_email` if set, else `hotels.public_email`. There is no global or cross-property fallback inbox. Each property admin configures their own address in **Hotel Admin → Reservation notifications**.
 - Guest email states **REQUEST RECEIVED — NOT CONFIRMED**. Guest SMS also states it is not confirmed and includes instructions to opt out. Messages never say a room is booked until Lumen or authorized staff later confirms it.
+- Property manager can open **Hotel Admin → Reservations**, select an existing Northwest 290 website request, verify it is booked in Northwest 290 Lumen PMS, enter the **actual PMS booking reference**, check the explicit attestation and click **Confirm booking and notify guest**. This changes the website's legacy request to a staff-confirmed reservation and separately queues a **CONFIRMED** guest email and opted-in SMS. It does **not** create a booking in Lumen, automatically verify the PMS reference, or validate availability on its own.
 
 ## Migration and activation
 
@@ -52,6 +53,8 @@ The source contains no real credentials or tokens.
 - `app/api/reservations/route.ts`: writes request + notification jobs in one D1 transaction; uses approved PMS name if one is independently verified; returns per-channel provider acceptance, never claims hotel confirmation.
 - `lib/reservation-notifications.ts`: chooses the hotel-specific inbox, sends Resend transactional messages and optionally Twilio SMS, tracks each channel independently. Provider acceptance is NOT guaranteed delivery. Resend uses a stable idempotency key per job.
 - `app/api/hotel/reservation-notifications/route.ts`: hotel-scoped settings, provider readiness, job counts and manual retry by CI reference. Only NW290 legacy requests can be retried. Retries skip already accepted messages and refuse unknown processing outcomes that might produce duplicate SMS.
+- `app/api/hotel/reservations/confirm/route.ts`: Northwest 290 hotel-manager-only, explicit staff attestation and mandatory PMS booking reference. Atomically updates website booking status and enqueues confirmed guest email/SMS, without writing anything to Lumen.
+- `app/api/hotel/dashboard/route.ts`: also shows existing Northwest 290 legacy website requests in its own hotel-admin reservations table, never in another hotel's view.
 - `app/book/page.tsx`: shows canonical name as read-only if verified, otherwise editable; guest SMS opt-in and clear delivery caveats.
 - `app/api/guest/me/route.ts`: returns registered PMS name only if the link is verified AND the snapshot matches the exact hotel and Lumen GuestID.
 
@@ -60,7 +63,7 @@ The source contains no real credentials or tokens.
 1. Provide approved tenant-scoped API credentials and an identity endpoint proving Northwest 290 HotelID=4 and the exact PMS instance. The cookie pilot currently proves only login; no guest data operations are enabled.
 2. Provide a sanitized **read-only guest profile API** with `GuestID`, `GuestCode`, registered first/last name, and only the contact fields authorized for this hotel. No driver license number, ID scan or government document image.
 3. Define the independent guest-to-PMS ownership-verification and staff-approval process. Only after successful verification may the connector populate `portal_guest_verified_pms_names` under the matched `hotel_id + portal_user_id + lumen_guest_id`. There is deliberately no public write API for this table.
-4. Provide an idempotent PMS booking creation and status API. **After** the property confirms availability, rate, and the actual PMS booking record, enqueue separate `guest_confirmed_email` and `guest_confirmed_sms` jobs with booked details. Those confirmed notifications are **not implemented** yet because Lumen booking creation/confirmation is not connected.
+4. Provide an idempotent PMS booking creation and status API so automated confirmations can replace the present **manual staff-attested** PMS confirmation. A hotel manager may currently initiate confirmation notifications *only after personally verifying the PMS booking and entering its real booking reference*. The website cannot independently verify this booking yet. When the PMS integration is approved, automatically verify status and prevent false confirmations, duplicate bookings, and cancellations.
 5. Ensure email/SMS delivery logs and provider webhook handling for delivered/bounced/failed states. Current status `accepted` means only provider accepted the send request.
 
 ## Limitations requiring operational sign-off
