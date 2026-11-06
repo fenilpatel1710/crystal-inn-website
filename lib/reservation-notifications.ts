@@ -86,7 +86,7 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
    if(!smsReady||!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(job.phone_e164))continue;
   }else{
    if(channel==='guest_request_email'&&!job.guest_email_enabled){output.guestEmail='not_requested';continue}
-   if(!emailReady||!emailValid(emailDestination))continue;
+   if(!emailReady||!emailDestination||!emailValid(emailDestination))continue;
   }
   // An atomic claim avoids two web requests sending the same job.
   let claimed:{id:string}|null;
