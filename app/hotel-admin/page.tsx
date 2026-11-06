@@ -14,6 +14,7 @@ export default function HotelAdmin(){
  const [notifySupported,setNotifySupported]=useState(false),[notifyProviders,setNotifyProviders]=useState({email:false,sms:false});
  const [notifySummary,setNotifySummary]=useState<Array<{channel:string;state:string;total:number}>>([]);
  const [retryReference,setRetryReference]=useState(''),[notifyActionResult,setNotifyActionResult]=useState('');
+ const [confirmReference,setConfirmReference]=useState(''),[confirmPmsCode,setConfirmPmsCode]=useState(''),[confirmVerified,setConfirmVerified]=useState(false);
  const [lumenStatus,setLumenStatus]=useState<{supported:boolean;enabled:boolean;configured:boolean;databaseScopeVerified:boolean}|null>(null);
  const [lumenTestResult,setLumenTestResult]=useState(''),[lumenTestBusy,setLumenTestBusy]=useState(false);
  const [features,setFeatures]=useState<FeatureFlags>(emptyFeatures());
@@ -58,6 +59,18 @@ export default function HotelAdmin(){
    setNotifyActionResult('Provider acceptance: hotel email '+d.delivery.propertyEmail+', guest email '+d.delivery.guestEmail+', guest SMS '+d.delivery.guestSms+'.');
    await loadReservationNotificationSettings();
   }catch(e){setError(e instanceof Error?e.message:'Could not retry pending notifications.')}finally{setBusy(false)}
+ }
+ async function confirmPmsBooking(e:FormEvent){
+  e.preventDefault();setBusy(true);setError('');setNotice('');
+  try{
+   const d=await request('/api/hotel/reservations/confirm',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({reference:confirmReference,lumenBookingReference:confirmPmsCode,confirmedInPms:confirmVerified})});
+   setNotice('Hotel staff confirmed the PMS booking. Guest email: '+d.delivery.guestEmail+
+    ', guest SMS: '+d.delivery.guestSms+'. Provider acceptance does not guarantee delivery.');
+   setConfirmReference('');setConfirmPmsCode('');setConfirmVerified(false);
+   await refresh();
+  }catch(e){setError(e instanceof Error?e.message:'Unable to confirm the booking.')}finally{setBusy(false)}
  }
  async function loadLumenStatus(){
   try{const data=await request('/api/hotel/lumen/connection');setLumenStatus(data)}
@@ -117,7 +130,28 @@ export default function HotelAdmin(){
  <div className="ci-console-body"><p className="ci-kicker">PROPERTY CONTROL CENTER</p><h1>{hotel.display_name}</h1><p>{hotel.city}, {hotel.region} · Your account is restricted to this property.</p>{error&&<p role="alert" className="ci-error">{error}</p>}{notice&&<p role="status" className="ci-notice">{notice}</p>}
  <div className="ci-summary"><article><strong>{reservations.length}</strong>Reservation records</article><article><strong>{rooms.length}</strong>Room categories</article><article><strong>{rates.length}</strong>Nightly rate entries</article></div>
  <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:25}}>{[['reservations','Reservations'],['rooms','Rooms & descriptions'],['room-photos','Room photos'],['rates','Rates & availability'],['profile','Hotel details'],['features','Amenities & Google'],['reviews','Guest reviews'],['notifications','Reservation notifications'],['lumen','Lumen API']].map(([key,label])=><button key={key} style={{padding:'12px 17px',border:'1px solid #d7e3ef',background:tab===key?'#173d70':'white',color:tab===key?'white':'#193b61',cursor:'pointer'}} onClick={()=>setTab(key)}>{label}</button>)}</div>
- {tab==='reservations'&&<section className="ci-panel"><h2>Hotel reservations</h2><p>Hotel-specific website records. Lumen PMS synchronization is not active.</p><div className="ci-table"><table><thead><tr><th>Reference</th><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Rooms</th><th>Status</th></tr></thead><tbody>{reservations.map(r=><tr key={r.reference}><td>{r.reference}</td><td>{r.guest_name}</td><td>{r.check_in}</td><td>{r.check_out}</td><td>{r.rooms_count}</td><td>{r.status}</td></tr>)}</tbody></table></div></section>}
+ {tab==='reservations'&&<section className="ci-panel"><h2>Hotel reservations</h2><p>Hotel-specific website records. Lumen PMS synchronization is not active.</p><div className="ci-table"><table><thead><tr><th>Reference</th><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Rooms</th><th>Status</th></tr></thead><tbody>{reservations.map(r=><tr key={r.reference}><td>{r.reference}</td><td>{r.guest_name}</td><td>{r.check_in}</td><td>{r.check_out}</td><td>{r.rooms_count}</td><td>{r.status}</td></tr>)}</tbody></table></div>
+  {notifySupported&&<form onSubmit={confirmPmsBooking} style={{marginTop:22}}>
+   <h3>Confirm a website request after verifying it in Lumen</h3>
+   <p>Before confirming, open Northwest 290's own Lumen PMS, check inventory/rate and create or locate the actual booking. Enter its real booking reference here. This does not create a Lumen reservation.</p>
+   <label>Website stay request<select required value={confirmReference} onChange={e=>setConfirmReference(e.target.value)}>
+    <option value="">Choose a request</option>
+    {reservations.filter(r=>/^CI-[0-9A-F]{12}$/.test(r.reference)&&['request_received','pending_review','confirmed'].includes(r.status)).map(r=>
+     <option key={r.reference} value={r.reference}>{r.reference} — {r.guest_name} — {r.check_in} ({r.status})</option>)}
+   </select></label>
+   <label>Confirmed Lumen booking reference<input required maxLength={80} value={confirmPmsCode}
+    onChange={e=>setConfirmPmsCode(e.target.value)} placeholder="Reference shown in the Northwest 290 Lumen PMS"/></label>
+   <label style={{flexDirection:'row',alignItems:'center',gap:10}}>
+    <input type="checkbox" style={{width:'auto'}} checked={confirmVerified}
+     onChange={e=>setConfirmVerified(e.target.checked)}/>
+    I checked the correct Northwest 290 Lumen database and verified this booking is confirmed.
+   </label>
+   <button type="submit" disabled={busy||!confirmReference||!confirmVerified||confirmPmsCode.trim().length<3}>
+    Confirm booking and notify guest
+   </button>
+   <p>Guest receives confirmed email and SMS (if separately opted in and provider configured). If a provider is unavailable, its delivery job remains pending for retry.</p>
+  </form>}
+ </section>}
  {tab==='profile'&&<section className="ci-panel"><h2>Your hotel's public page</h2><p>Changes below appear on your individual hotel's public page, not on other Crystal Inn properties.</p><form onSubmit={saveProfile}><label>Hotel description<textarea style={{padding:12,minHeight:125}} maxLength={1800} value={profileDescription} onChange={e=>setProfileDescription(e.target.value)}/></label><label>Hotel cover photo (HTTPS URL)<input type="url" maxLength={1000} value={profileImage} onChange={e=>setProfileImage(e.target.value)} placeholder="https://..."/></label><label>Public phone<input maxLength={32} value={profilePhone} onChange={e=>setProfilePhone(e.target.value)}/></label><label>Public email<input type="email" maxLength={190} value={profileEmail} onChange={e=>setProfileEmail(e.target.value)}/></label><label>Address<input maxLength={250} value={profileAddress} onChange={e=>setProfileAddress(e.target.value)}/></label><button disabled={busy}>Save hotel details</button></form><p><a href={'/hotels/'+(hotel?.id==='crystal-inn-northwest-290'?'northwest-290':'')}>View hotel page</a></p></section>}
  {tab==='features'&&<section className="ci-panel"><h2>Amenities and guest services</h2>
  <p>Enable only services actually offered at this property. The hotel directory shows a check mark for enabled amenities and a blank box for those not enabled.</p>
