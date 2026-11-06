@@ -9,17 +9,19 @@ import 'server-only';
 import {getCloudflareContext} from '@opennextjs/cloudflare';
 import type {DB} from '../admin/auth';
 
-export type RequestChannel='property_request_email'|'guest_request_email'|'guest_request_sms';
+export type RequestChannel='property_request_email'|'guest_request_email'|'guest_request_sms'|'guest_confirmed_email'|'guest_confirmed_sms';
 type Job={
  id:string;channel:RequestChannel;state:string;reservation_id:string;hotel_id:string;
  reference:string;first_name:string;last_name:string;phone_e164:string;email:string;
  room_type_label:string;check_in:string;check_out:string;rooms_count:number;guests_count:number;
  special_requests:string|null;hotel_name:string;public_email:string|null;booking_notification_email:string|null;
  guest_email_enabled:number;guest_sms_enabled:number;sms_updates_consent:number;
+ booking_status:string;lumen_booking_code:string|null;
 };
 type DispatchStatus='accepted'|'pending'|'failed'|'not_requested';
 export type RequestDispatch={propertyEmail:DispatchStatus;guestEmail:DispatchStatus;guestSms:DispatchStatus};
-const channels:RequestChannel[]=['property_request_email','guest_request_email','guest_request_sms'];
+const requestChannels:RequestChannel[]=['property_request_email','guest_request_email','guest_request_sms'];
+const confirmedChannels:RequestChannel[]=['guest_confirmed_email','guest_confirmed_sms'];
 function envText(e:Record<string,unknown>,key:string){
  return typeof e[key]==='string'?(e[key] as string).trim():'';
 }
@@ -44,18 +46,33 @@ export function reservationText(job:Pick<Job,'reference'|'first_name'|'last_name
 }
 export function reservationSms(job:Pick<Job,'hotel_name'|'reference'|'check_in'|'check_out'>){
  return job.hotel_name+': We received your stay REQUEST '+job.reference+' ('+job.check_in+' to '+job.check_out+
- '. This is NOT a confirmed booking. Hotel staff will review availability. Reply STOP to opt out.';
+ '). This is NOT a confirmed booking. Hotel staff will review availability. Reply STOP to opt out.';
+}
+function confirmedEmail(job:Job){
+ return 'Reservation CONFIRMED by '+job.hotel_name+' staff after their PMS check.\\n'+
+  'PMS Booking Reference: '+job.lumen_booking_code+'\\n'+
+  'Website Reference: '+job.reference+'\\n'+
+  'Registered Guest: '+job.first_name+' '+job.last_name+'\\n'+
+  'Check-in: '+job.check_in+'\\nCheck-out: '+job.check_out+
+  '\\nRoom preference: '+job.room_type_label+
+  '\\nContact your property directly for final room assignment and payment/deposit policies.';
+}
+function confirmedSms(job:Job){
+ return job.hotel_name+': Your reservation '+job.reference+' is CONFIRMED by hotel staff. PMS: '+
+  job.lumen_booking_code+'. Stay '+job.check_in+' to '+job.check_out+
+  '. Contact hotel for details. Reply STOP to opt out.';
 }
 function safelyError(code:string){return code.replace(/[^a-z0-9_]/g,'').slice(0,40)||'unknown';}
-export async function dispatchReservationNotifications(db:DB,reservationId:string):Promise<RequestDispatch>{
- const output:RequestDispatch={propertyEmail:'pending',guestEmail:'pending',guestSms:'not_requested'};
+export async function dispatchReservationNotifications(db:DB,reservationId:string,purpose:'request'|'confirmed'='request'):Promise<RequestDispatch>{
+ const output:RequestDispatch={propertyEmail:purpose==='confirmed'?'not_requested':'pending',guestEmail:'pending',guestSms:'not_requested'};
+ const channels=purpose==='confirmed'?confirmedChannels:requestChannels;
  const e=getCloudflareContext().env as unknown as Record<string,unknown>;
  let jobs:Job[];
  try{
   const data=await db.prepare(`SELECT n.id,n.channel,n.state,n.reservation_id,n.hotel_id,
     r.public_reference AS reference,r.first_name,r.last_name,r.phone_e164,r.email,
     r.room_type_label,r.check_in,r.check_out,r.rooms_count,r.guests_count,r.special_requests,
-    r.sms_updates_consent,h.display_name AS hotel_name,h.public_email,
+    r.sms_updates_consent,r.booking_status,r.lumen_booking_code,h.display_name AS hotel_name,h.public_email,
     s.booking_notification_email,COALESCE(s.guest_email_enabled,1) AS guest_email_enabled,
     COALESCE(s.guest_sms_enabled,0) AS guest_sms_enabled
     FROM reservation_notification_jobs n
@@ -63,10 +80,11 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
     JOIN hotels h ON h.id=n.hotel_id AND h.status='active' AND h.archived_at IS NULL
     LEFT JOIN hotel_reservation_settings s ON s.hotel_id=n.hotel_id
     WHERE n.reservation_id=? AND n.hotel_id='crystal-inn-northwest-290'
-      AND n.channel IN ('property_request_email','guest_request_email','guest_request_sms')`)
+      AND n.channel IN ('property_request_email','guest_request_email','guest_request_sms','guest_confirmed_email','guest_confirmed_sms')`)
    .bind(reservationId).all<Job>();
   jobs=data.results;
  }catch{return output}
+ if(purpose==='confirmed' && jobs.some(j=>j.booking_status!=='confirmed'||!j.lumen_booking_code))return output;
  const apiKey=envText(e,'RESEND_API_KEY'),from=envText(e,'RESERVATION_FROM_EMAIL');
  const emailReady=Boolean(apiKey&&emailValid(from));
  const account=envText(e,'TWILIO_ACCOUNT_SID'),apiSid=envText(e,'TWILIO_API_KEY'),apiSecret=envText(e,'TWILIO_API_SECRET');
@@ -76,16 +94,16 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
  for(const channel of channels){
   const job=jobs.find(j=>j.channel===channel);
   if(!job)continue;
-  const key=channel==='property_request_email'?'propertyEmail':channel==='guest_request_email'?'guestEmail':'guestSms';
+  const key=channel==='property_request_email'?'propertyEmail':channel.includes('email')?'guestEmail':'guestSms';
   if(job.state==='accepted'){output[key]='accepted';continue}
   const emailDestination=channel==='property_request_email'
     ?(job.booking_notification_email||job.public_email||''):job.email;
-  if(channel==='guest_request_sms'){
+  if(channel==='guest_request_sms'||channel==='guest_confirmed_sms'){
    if(!job.sms_updates_consent||!job.guest_sms_enabled){output.guestSms='not_requested';continue}
    output.guestSms='pending';
    if(!smsReady||!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(job.phone_e164))continue;
   }else{
-   if(channel==='guest_request_email'&&!job.guest_email_enabled){output.guestEmail='not_requested';continue}
+   if(channel!=='property_request_email'&&!job.guest_email_enabled){output.guestEmail='not_requested';continue}
    if(!emailReady||!emailDestination||!emailValid(emailDestination))continue;
   }
   // An atomic claim avoids two web requests sending the same job.
@@ -99,7 +117,7 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
   let ok=false,providerId='',errorCode='network_error';
   try{
    if(channel==='guest_request_sms'){
-    const params=new URLSearchParams({To:job.phone_e164,MessagingServiceSid:service,Body:reservationSms(job)});
+    const params=new URLSearchParams({To:job.phone_e164,MessagingServiceSid:service,Body:purpose==='confirmed'?confirmedSms(job):reservationSms(job)});
     const response=await fetch('https://api.twilio.com/2010-04-01/Accounts/'+account+'/Messages.json',{
      method:'POST',headers:{Authorization:'Basic '+Buffer.from(apiSid+':'+apiSecret).toString('base64'),
       'Content-Type':'application/x-www-form-urlencoded',Accept:'application/json'},
@@ -112,13 +130,13 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
     }
     errorCode='twilio_http_'+response.status;
    }else{
-    const text=reservationText(job,channel==='property_request_email');
+    const text=purpose==='confirmed'?confirmedEmail(job):reservationText(job,channel==='property_request_email');
     const response=await fetch('https://api.resend.com/emails',{
      method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json',
       'Idempotency-Key':job.id},
      body:JSON.stringify({
       from,to:[emailDestination],
-      subject:(channel==='property_request_email'?'NEW stay REQUEST ':'Stay request RECEIVED ')+job.reference+' — '+job.hotel_name,
+      subject:(purpose==='confirmed'?'Reservation CONFIRMED ':channel==='property_request_email'?'NEW stay REQUEST ':'Stay request RECEIVED ')+job.reference+' — '+job.hotel_name,
       text,html:'<div style="font-family:Arial,sans-serif;white-space:pre-line">'+xml(text)+'</div>',
       ...(channel==='property_request_email'&&emailValid(job.email)?{reply_to:job.email}:{})
      }),
