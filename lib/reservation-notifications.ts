@@ -49,13 +49,13 @@ export function reservationSms(job:Pick<Job,'hotel_name'|'reference'|'check_in'|
  '). This is NOT a confirmed booking. Hotel staff will review availability. Reply STOP to opt out.';
 }
 function confirmedEmail(job:Job){
- return 'Reservation CONFIRMED by '+job.hotel_name+' staff after their PMS check.\\n'+
-  'PMS Booking Reference: '+job.lumen_booking_code+'\\n'+
-  'Website Reference: '+job.reference+'\\n'+
-  'Registered Guest: '+job.first_name+' '+job.last_name+'\\n'+
-  'Check-in: '+job.check_in+'\\nCheck-out: '+job.check_out+
-  '\\nRoom preference: '+job.room_type_label+
-  '\\nContact your property directly for final room assignment and payment/deposit policies.';
+ return 'Reservation CONFIRMED by '+job.hotel_name+' staff after their PMS check.\n'+
+  'PMS Booking Reference: '+job.lumen_booking_code+'\n'+
+  'Website Reference: '+job.reference+'\n'+
+  'Registered Guest: '+job.first_name+' '+job.last_name+'\n'+
+  'Check-in: '+job.check_in+'\nCheck-out: '+job.check_out+
+  '\nRoom preference: '+job.room_type_label+
+  '\nContact your property directly for final room assignment and payment/deposit policies.';
 }
 function confirmedSms(job:Job){
  return job.hotel_name+': Your reservation '+job.reference+' is CONFIRMED by hotel staff. PMS: '+
