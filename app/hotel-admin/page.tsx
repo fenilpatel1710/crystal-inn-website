@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState,FormEvent} from 'react';
 import RoomPhotoManager from '../../components/RoomPhotoManager';
+import HotelMapTile from '../../components/HotelMapTile';
 import {HOTEL_FEATURES,emptyFeatures,type FeatureFlags} from '../../lib/hotel-features';
 import '../platform-admin/portal.css';
 type Hotel={id:string;display_name:string;city:string;region:string};
@@ -8,6 +9,7 @@ type Room={id:string;display_name:string;description:string;image_url:string|nul
 type Reservation={reference:string;guest_name:string;check_in:string;check_out:string;rooms_count:number;status:string};
 type Rate={room_type_id:string;stay_date:string;rate_cents:number|null;allotment:number;stop_sell:number};
 type GuestReview={id:string;rating:number;review_text:string;status:'published'|'hidden';created_at:string};
+type GoogleListing={placeId:string;name:string;address:string;mapsUrl:string};
 export default function HotelAdmin(){
  const [notifyEmail,setNotifyEmail]=useState(''),[notifyPublicEmail,setNotifyPublicEmail]=useState('');
  const [notifyGuestEmail,setNotifyGuestEmail]=useState(true),[notifyGuestSms,setNotifyGuestSms]=useState(false);
@@ -19,6 +21,32 @@ export default function HotelAdmin(){
  const [lumenTestResult,setLumenTestResult]=useState(''),[lumenTestBusy,setLumenTestBusy]=useState(false);
  const [features,setFeatures]=useState<FeatureFlags>(emptyFeatures());
  const [googlePlaceId,setGooglePlaceId]=useState(''),[googleReviewUrl,setGoogleReviewUrl]=useState('');
+ const [googleListings,setGoogleListings]=useState<GoogleListing[]>([]);
+ const [googleSearchBusy,setGoogleSearchBusy]=useState(false),[googleSearchNotice,setGoogleSearchNotice]=useState('');
+ const [googleSelectedListing,setGoogleSelectedListing]=useState('');
+ async function findGoogleListing(){
+  setGoogleSearchBusy(true);setGoogleSearchNotice('');setGoogleListings([]);
+  try{
+   const d=await request('/api/hotel/google-places',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'search'})});
+   setGoogleListings(Array.isArray(d.results)?d.results:[]);
+   if(!d.results?.length)setGoogleSearchNotice('No matching Google listing found. Verify the street address under Hotel details or enter a Place ID manually.');
+  }catch(e){setGoogleSearchNotice(e instanceof Error?e.message:'Google Places search unavailable.')}
+  finally{setGoogleSearchBusy(false)}
+ }
+ async function chooseGoogleListing(placeId:string){
+  setGoogleSearchBusy(true);setGoogleSearchNotice('');
+  try{
+   const d=await request('/api/hotel/google-places',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'details',placeId})});
+   setGooglePlaceId(d.placeId);
+   if(d.reviewUrl||d.mapsUrl)setGoogleReviewUrl(d.reviewUrl||d.mapsUrl);
+   setGoogleSelectedListing([d.name,d.address].filter(Boolean).join(' · '));
+   setGoogleListings([]);
+   setGoogleSearchNotice('Google listing selected. Check the details, then click Save amenities and Google settings below.');
+  }catch(e){setGoogleSearchNotice(e instanceof Error?e.message:'Could not verify the selected listing.')}
+  finally{setGoogleSearchBusy(false)}
+ }
  const [guestReviews,setGuestReviews]=useState<GuestReview[]>([]);
  const [forgotMode,setForgotMode]=useState(false),[forgotNotice,setForgotNotice]=useState('');
  const [locations,setLocations]=useState<Hotel[]>([]);const [hotelId,setHotelId]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState('');
@@ -129,6 +157,7 @@ export default function HotelAdmin(){
  <div className="ci-auth"><p className="ci-kicker">PROPERTY ACCESS</p><h1>Hotel Admin</h1><p>Select your hotel and enter the manager credentials assigned by the platform administrator.</p>{forgotMode?<form onSubmit={forgotPassword}><p>Enter your manager email to request a one-time reset link. It expires after 30 minutes.</p><label>Manager email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button disabled={busy}>Email reset link</button><button type="button" style={{marginLeft:10}} onClick={()=>setForgotMode(false)}>Back to sign in</button></form>:<form onSubmit={login}><label>Hotel<select required value={hotelId} onChange={e=>setHotelId(e.target.value)}><option value="">Select your hotel</option>{locations.map(h=><option key={h.id} value={h.id}>{h.display_name} — {h.city}, {h.region}</option>)}</select></label><label>Manager email<input type="email" required autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)}/></label><button disabled={busy}>Sign in</button></form>}<button type="button" onClick={()=>{setForgotMode(true);setForgotNotice("");setError("")}} style={{background:"transparent",border:0,color:"#184aaf",padding:"12px 0",cursor:"pointer"}}>Forgot password?</button>{forgotNotice&&<p role="status" className="ci-notice">{forgotNotice}</p>}{error&&<p role="alert" className="ci-error">{error}</p>}<p className="ci-small">Existing Northwest 290 staff can still use the legacy /admin portal until property migration is complete.</p></div>:
  <div className="ci-console-body"><p className="ci-kicker">PROPERTY CONTROL CENTER</p><h1>{hotel.display_name}</h1><p>{hotel.city}, {hotel.region} · Your account is restricted to this property.</p>{error&&<p role="alert" className="ci-error">{error}</p>}{notice&&<p role="status" className="ci-notice">{notice}</p>}
  <div className="ci-summary"><article><strong>{reservations.length}</strong>Reservation records</article><article><strong>{rooms.length}</strong>Room categories</article><article><strong>{rates.length}</strong>Nightly rate entries</article></div>
+ <HotelMapTile hotelName={hotel.display_name} address={profileAddress} city={hotel.city} region={hotel.region} placeId={googlePlaceId}/>
  <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:25}}>{[['reservations','Reservations'],['rooms','Rooms & descriptions'],['room-photos','Room photos'],['rates','Rates & availability'],['profile','Hotel details'],['features','Amenities & Google'],['reviews','Guest reviews'],['notifications','Reservation notifications'],['lumen','Lumen API']].map(([key,label])=><button key={key} style={{padding:'12px 17px',border:'1px solid #d7e3ef',background:tab===key?'#173d70':'white',color:tab===key?'white':'#193b61',cursor:'pointer'}} onClick={()=>setTab(key)}>{label}</button>)}</div>
  {tab==='reservations'&&<section className="ci-panel"><h2>Hotel reservations</h2><p>Hotel-specific website records. Lumen PMS synchronization is not active.</p><div className="ci-table"><table><thead><tr><th>Reference</th><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Rooms</th><th>Status</th></tr></thead><tbody>{reservations.map(r=><tr key={r.reference}><td>{r.reference}</td><td>{r.guest_name}</td><td>{r.check_in}</td><td>{r.check_out}</td><td>{r.rooms_count}</td><td>{r.status}</td></tr>)}</tbody></table></div>
   {notifySupported&&<form onSubmit={confirmPmsBooking} style={{marginTop:22}}>
@@ -163,11 +192,27 @@ export default function HotelAdmin(){
    </label>)}
   </div>
   <p className="ci-small">Rewards is a participation flag, not a live Lumen points balance. Do not enable rewards without hotel approval.</p>
-  <h2>Google Maps reviews</h2>
-  <p>Enter this property's actual Google Place ID. A Google Places API key is required for the live Google star rating. The review URL lets guests rate this hotel on Google even without the Places API key.</p>
-  <label>Google Place ID<input maxLength={255} value={googlePlaceId} onChange={e=>setGooglePlaceId(e.target.value)} placeholder="Google Place ID for this property"/></label>
-  <label>Google review link (optional)<input type="url" maxLength={1500} value={googleReviewUrl} onChange={e=>setGoogleReviewUrl(e.target.value)} placeholder="https://www.google.com/maps/..."/></label>
-  <p className="ci-small">Only official Google Maps links are allowed. Do not type a rating manually; Google ratings come directly from the Places API.</p>
+  <h2>Google Maps listing & guest reviews</h2>
+  <p>Connect this hotel's correct Google listing to show real Google ratings and reviews, and give guests a direct Google review link. Choose your own property — never select another Crystal Inn location.</p>
+  <div style={{background:'#f2f7fc',border:'1px solid #d8e5f3',padding:17,borderRadius:8,margin:'12px 0 20px'}}>
+   <h3 style={{margin:'0 0 8px'}}>Find this hotel's Google listing</h3>
+   <p style={{margin:'0 0 12px'}}>Searching with the hotel name and address saved under Hotel details. Google Places API (New) must be enabled and GOOGLE_PLACES_API_KEY configured in Cloudflare. Search may incur Google Maps Platform usage charges.</p>
+   <button type="button" disabled={busy||googleSearchBusy||!profileAddress.trim()} onClick={()=>void findGoogleListing()}>
+    {googleSearchBusy?'Searching Google…':'Find this hotel on Google Maps'}
+   </button>
+   {!profileAddress.trim()&&<p className="ci-small">First enter the hotel's complete street address in Hotel details.</p>}
+   {googleSearchNotice&&<p role="status" style={{margin:'12px 0',color:'#24486e'}}>{googleSearchNotice}</p>}
+   {googleListings.length>0&&<div style={{display:'grid',gap:9,marginTop:15}} aria-label="Google Maps listing matches">
+    {googleListings.map(item=><div key={item.placeId} style={{border:'1px solid #c9daed',background:'white',borderRadius:6,padding:12,display:'flex',gap:12,justifyContent:'space-between',alignItems:'center',flexWrap:'wrap'}}>
+     <div><strong>{item.name}</strong><p style={{margin:'4px 0',fontSize:13}}>{item.address}</p>{item.mapsUrl&&<a href={item.mapsUrl} target="_blank" rel="noopener noreferrer">Verify on Google Maps ↗</a>}</div>
+     <button type="button" disabled={googleSearchBusy} onClick={()=>void chooseGoogleListing(item.placeId)}>Use this listing</button>
+    </div>)}
+   </div>}
+   {googleSelectedListing&&<p className="ci-small"><strong>Selected listing:</strong> {googleSelectedListing}</p>}
+  </div>
+  <label>Google Place ID<input maxLength={255} value={googlePlaceId} onChange={e=>setGooglePlaceId(e.target.value)} placeholder="Choose from search results or paste the hotel's official Place ID"/></label>
+  <label>Google review / Maps link (optional)<input type="url" maxLength={1500} value={googleReviewUrl} onChange={e=>setGoogleReviewUrl(e.target.value)} placeholder="https://www.google.com/maps/..."/></label>
+  <p className="ci-small">Selecting a result fills the real Place ID and official Google link when available. Click Save to publish changes. Real star ratings require the server-side GOOGLE_PLACES_API_KEY. Google Travel search links may not open the review composer directly.</p>
   <button disabled={busy}>Save amenities and Google settings</button>
  </form></section>}
  {tab==='reviews'&&<section className="ci-panel"><h2>Guest website reviews</h2>
