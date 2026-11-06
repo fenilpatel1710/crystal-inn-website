@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server';
 import {authorize,noStore} from '../../../../lib/platform/auth';
 import {dispatchReservationNotifications} from '../../../../lib/reservation-notifications';
 import {getCloudflareContext} from '@opennextjs/cloudflare';
+import {googleWorkspaceMailConfigured} from '../../../../lib/google-workspace-mail';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const PILOT='crystal-inn-northwest-290';
 const validEmail=(s:string)=>!s||s.length<=190&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -9,7 +10,7 @@ function providerState(){
  const e=getCloudflareContext().env as unknown as Record<string,unknown>;
  const str=(name:string)=>typeof e[name]==='string'?(e[name] as string).trim():'';
  return {
-  email:Boolean(str('RESEND_API_KEY')&&str('RESERVATION_FROM_EMAIL')),
+  email:googleWorkspaceMailConfigured(e),
   sms:Boolean((e.RESERVATION_SMS_ENABLED===true||str('RESERVATION_SMS_ENABLED').toLowerCase()==='true')
    &&/^AC[0-9a-f]{32}$/i.test(str('TWILIO_ACCOUNT_SID'))
    &&/^MG[0-9a-f]{32}$/i.test(str('TWILIO_MESSAGING_SERVICE_SID'))
