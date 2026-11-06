@@ -7,7 +7,7 @@
  */
 import 'server-only';
 import {getCloudflareContext} from '@opennextjs/cloudflare';
-import type {DB} from '../admin/auth';
+import type {DB} from './admin/auth';
 
 export type RequestChannel='property_request_email'|'guest_request_email'|'guest_request_sms'|'guest_confirmed_email'|'guest_confirmed_sms';
 type Job={
