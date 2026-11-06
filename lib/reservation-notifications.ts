@@ -116,7 +116,7 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
   if(!claimed)continue;
   let ok=false,providerId='',errorCode='network_error';
   try{
-   if(channel==='guest_request_sms'){
+   if(channel==='guest_request_sms'||channel==='guest_confirmed_sms'){
     const params=new URLSearchParams({To:job.phone_e164,MessagingServiceSid:service,Body:purpose==='confirmed'?confirmedSms(job):reservationSms(job)});
     const response=await fetch('https://api.twilio.com/2010-04-01/Accounts/'+account+'/Messages.json',{
      method:'POST',headers:{Authorization:'Basic '+Buffer.from(apiSid+':'+apiSecret).toString('base64'),
