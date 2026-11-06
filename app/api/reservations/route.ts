@@ -2,19 +2,11 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { NextRequest, NextResponse } from 'next/server';
 import {guestSession} from '../../../lib/guest/auth';
 import {dispatchReservationNotifications} from '../../../lib/reservation-notifications';
+import type {DB} from '../../../lib/admin/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-interface D1Statement {
-  bind(...values: (string | number | null)[]): D1Statement;
-  first<T>(): Promise<T | null>;
-  run(): Promise<unknown>;
-}
-interface D1Database {
-  prepare(query: string): D1Statement;
-  batch(statements: D1Statement[]): Promise<unknown[]>;
-}
 const allowedRoomTypes = new Set(['King Non-Smoking', 'King Smoking', 'Queen Non-Smoking', 'No preference']);
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const text = (value: unknown, max: number) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -67,10 +59,10 @@ export async function POST(request: NextRequest) {
   if(!emailPattern.test(v.email)) return invalid('Enter a valid email address.');
   if(!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(usPhoneE164(v.phone))) return invalid('Enter a valid US phone number with area code.');
 
-  let db: D1Database;
+  let db: DB;
   try {
     const context = getCloudflareContext();
-    const env = context.env as typeof context.env & {DB?: D1Database};
+    const env = context.env as typeof context.env & {DB?: DB};
     if (!env.DB) throw Error('DB binding not present');
     db = env.DB;
   } catch {
