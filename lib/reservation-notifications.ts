@@ -8,6 +8,7 @@
 import 'server-only';
 import {getCloudflareContext} from '@opennextjs/cloudflare';
 import type {DB} from './admin/auth';
+import {googleWorkspaceMailConfigured,sendGoogleWorkspaceMail} from './google-workspace-mail';
 
 export type RequestChannel='property_request_email'|'guest_request_email'|'guest_request_sms'|'guest_confirmed_email'|'guest_confirmed_sms';
 type Job={
@@ -85,8 +86,7 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
   jobs=data.results;
  }catch{return output}
  if(purpose==='confirmed' && jobs.some(j=>j.booking_status!=='confirmed'||!j.lumen_booking_code))return output;
- const apiKey=envText(e,'RESEND_API_KEY'),from=envText(e,'RESERVATION_FROM_EMAIL');
- const emailReady=Boolean(apiKey&&emailValid(from));
+ const emailReady=googleWorkspaceMailConfigured(e);
  const account=envText(e,'TWILIO_ACCOUNT_SID'),apiSid=envText(e,'TWILIO_API_KEY'),apiSecret=envText(e,'TWILIO_API_SECRET');
  const service=envText(e,'TWILIO_MESSAGING_SERVICE_SID');
  const smsEnabled=e.RESERVATION_SMS_ENABLED===true||envText(e,'RESERVATION_SMS_ENABLED').toLowerCase()==='true';
@@ -116,7 +116,7 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
   if(!claimed)continue;
   let ok=false,providerId='',errorCode='network_error';
   try{
-   if(channel==='guest_request_sms'){
+   if(channel==='guest_request_sms'||channel==='guest_confirmed_sms'){
     const params=new URLSearchParams({To:job.phone_e164,MessagingServiceSid:service,Body:purpose==='confirmed'?confirmedSms(job):reservationSms(job)});
     const response=await fetch('https://api.twilio.com/2010-04-01/Accounts/'+account+'/Messages.json',{
      method:'POST',headers:{Authorization:'Basic '+Buffer.from(apiSid+':'+apiSecret).toString('base64'),
@@ -131,19 +131,20 @@ export async function dispatchReservationNotifications(db:DB,reservationId:strin
     errorCode='twilio_http_'+response.status;
    }else{
     const text=purpose==='confirmed'?confirmedEmail(job):reservationText(job,channel==='property_request_email');
-    const response=await fetch('https://api.resend.com/emails',{
-     method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json',
-      'Idempotency-Key':job.id},
-     body:JSON.stringify({
-      from,to:[emailDestination],
+    const result=await sendGoogleWorkspaceMail(e,{
+      to:emailDestination,
       subject:(purpose==='confirmed'?'Reservation CONFIRMED ':channel==='property_request_email'?'NEW stay REQUEST ':'Stay request RECEIVED ')+job.reference+' — '+job.hotel_name,
-      text,html:'<div style="font-family:Arial,sans-serif;white-space:pre-line">'+xml(text)+'</div>',
-      ...(channel==='property_request_email'&&emailValid(job.email)?{reply_to:job.email}:{})
-     }),
-     redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(8000)
+      text,
+      ...(channel==='property_request_email'&&emailValid(job.email)?{replyTo:job.email}:{})
     });
-    if(response.ok){const payload=await response.json() as {id?:string};ok=Boolean(payload.id);providerId=payload.id||'';}
-    errorCode='resend_http_'+response.status;
+    ok=result.accepted;
+    providerId=result.messageId||'';
+    errorCode=result.errorCode||'google_mail_failed';
+    if(result.uncertain){
+     // Gmail API doesn't support an idempotency header. Unknown provider
+     // outcomes require checking Google Workspace Sent, not blind retries.
+     continue;
+    }
    }
   }catch{errorCode='network_error'}
   try{
