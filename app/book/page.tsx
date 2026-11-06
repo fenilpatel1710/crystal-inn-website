@@ -5,13 +5,14 @@ import styles from './book.module.css';
 type GuestSession={
  authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string;
  profile?:{firstName:string;lastName:string;email:string}|null;
+ pmsRegisteredName?:{firstName:string;lastName:string}|null;
  profileSetupPending?:boolean;
 };
 type BookingForm={
   checkIn:string;checkOut:string;roomType:string;rooms:string;guests:string;
-  firstName:string;lastName:string;phone:string;email:string;notes:string;website:string;
+  firstName:string;lastName:string;phone:string;email:string;notes:string;website:string;smsUpdatesConsent:boolean;
 };
-const blank:BookingForm={checkIn:'',checkOut:'',roomType:'King Non-Smoking',rooms:'1',guests:'2',firstName:'',lastName:'',phone:'',email:'',notes:'',website:''};
+const blank:BookingForm={checkIn:'',checkOut:'',roomType:'King Non-Smoking',rooms:'1',guests:'2',firstName:'',lastName:'',phone:'',email:'',notes:'',website:'',smsUpdatesConsent:false};
 const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 export default function BookPage(){
  const [form,setForm]=useState<BookingForm>(blank);
@@ -31,8 +32,8 @@ export default function BookPage(){
     setForm(prev=>({
      ...prev,
      phone:session.phone||prev.phone,
-     firstName:prev.firstName||session.profile?.firstName||'',
-     lastName:prev.lastName||session.profile?.lastName||'',
+     firstName:session.pmsRegisteredName?.firstName||prev.firstName||session.profile?.firstName||'',
+     lastName:session.pmsRegisteredName?.lastName||prev.lastName||session.profile?.lastName||'',
      email:prev.email||session.profile?.email||''
     }));
    })
@@ -44,6 +45,7 @@ export default function BookPage(){
  const [error,setError]=useState('');
  const [reference,setReference]=useState('');
  const [notificationPending,setNotificationPending]=useState(false);
+ const [deliveryNotice,setDeliveryNotice]=useState('');
  const requestKey=useRef<string>('');
  const change=(key:keyof BookingForm,value:string)=>setForm(p=>({...p,[key]:value}));
  async function submit(e:FormEvent<HTMLFormElement>){
@@ -55,7 +57,12 @@ export default function BookPage(){
      const response=await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','X-Reservation-Request-Key':requestKey.current},body:JSON.stringify(form),cache:'no-store'});
      const data=await response.json().catch(()=>({}));
      if(!response.ok)throw new Error(typeof data.error==='string'?data.error:'Unable to submit request. Please contact the front desk.');
-     setReference(data.reference);setNotificationPending(data.notification!=='sent');requestKey.current='';
+     setReference(data.reference);setNotificationPending(data.notification!=='sent');
+     const emails=data.delivery?.guestEmail==='accepted';
+     const sms=data.delivery?.guestSms==='accepted';
+     setDeliveryNotice((emails?'Your request acknowledgment email has been accepted for sending.':'Guest email acknowledgment is pending.')+
+      (form.smsUpdatesConsent?' '+(sms?'SMS update has been accepted for sending.':'SMS update is pending or not configured.'):''));
+     requestKey.current='';
      setForm(prev=>guestSession?{...blank,firstName:prev.firstName,lastName:prev.lastName,phone:prev.phone,email:prev.email}:blank);
    }catch(err){setError(err instanceof Error?err.message:'Unable to submit request.');}
    finally{setLoading(false);}
@@ -64,7 +71,7 @@ export default function BookPage(){
    <header className={styles.header}><a href="/" className={styles.brand}><img src="/crystal-inn-logo.svg" alt="" width="40" height="40"/><span>CRYSTAL INN <small>NORTHWEST 290 · HOUSTON</small></span></a><a href="/" className={styles.back}>← Back to website</a></header>
    <div className={styles.wrap}>
      <section className={styles.intro}><p className={styles.kicker}>RESERVATIONS</p><h1>Request your stay.</h1><p>Tell us when you would like to visit. Our front desk will check availability and contact you to confirm your room and rate.</p><div className={styles.warning}><strong>Request only — not a confirmed reservation.</strong> No room is held, no payment is collected, and availability is not guaranteed until the hotel contacts you.</div></section>
-     {reference?<section className={styles.card} role="status"><div className={styles.success}>✓</div><h2>Request received</h2><p>Your request reference is <strong>{reference}</strong>.</p><p>The front desk must still confirm availability and pricing. Please do not consider your stay booked until the hotel confirms it.</p>{notificationPending&&<p className={styles.warning}><strong>Your request is saved, but front-desk email delivery is not confirmed.</strong> Please call <a href="tel:+17139936567">713-993-6567</a> and provide your reference number.</p>}<button className={styles.button} onClick={()=>setReference('')}>Send another request</button><a className={styles.link} href="/">Return to Crystal Inn</a></section>:
+     {reference?<section className={styles.card} role="status"><div className={styles.success}>✓</div><h2>Request received</h2><p>Your request reference is <strong>{reference}</strong>.</p><p>The front desk must still confirm availability and pricing. Please do not consider your stay booked until the hotel confirms it.</p>{deliveryNotice&&<p>{deliveryNotice} Provider acceptance does not guarantee delivery.</p>{notificationPending&&<p className={styles.warning}><strong>Your request is saved, but front-desk email delivery is not confirmed.</strong> Please call <a href="tel:+17139936567">713-993-6567</a> and provide your reference number.</p>}<button className={styles.button} onClick={()=>setReference('')}>Send another request</button><a className={styles.link} href="/">Return to Crystal Inn</a></section>:
      <form className={styles.card} onSubmit={submit}>
        <h2>Stay details</h2>
        <div className={styles.grid}>
@@ -77,7 +84,7 @@ export default function BookPage(){
        <h2>Guest contact</h2>
        {guestSession?.authenticated&&<p className={styles.guestNotice}>
         Signed in to <strong>{guestSession.hotelName}</strong>.
-        {guestSession.profile?' Your saved guest details have been filled in.':' Complete your guest details with this request.'}
+        {guestSession.pmsRegisteredName?' Your separately verified Lumen PMS registered name has been filled in and cannot be edited.':guestSession.profile?' Your saved website guest details have been filled in; they have not yet been verified against Lumen PMS.':' Complete your guest details with this request.'}
         {' '}This reservation request will be linked to your verified phone account.
        </p>}
        {guestStatus==='checking'&&<p className={styles.guestNotice} role="status">Checking your guest sign-in…</p>}
@@ -92,11 +99,16 @@ export default function BookPage(){
         {' '}<a href="/guest/login?hotel=northwest-290">Check guest sign-in</a>.
        </p>}
        <div className={styles.grid}>
-         <label>First name<input required maxLength={70} autoComplete="given-name" value={form.firstName} onChange={e=>change('firstName',e.target.value)}/></label>
-         <label>Last name<input required maxLength={70} autoComplete="family-name" value={form.lastName} onChange={e=>change('lastName',e.target.value)}/></label>
+         <label>First name<input required maxLength={70} autoComplete="given-name" value={form.firstName} readOnly={Boolean(guestSession?.pmsRegisteredName)} onChange={e=>change('firstName',e.target.value)}/></label>
+         <label>Last name<input required maxLength={70} autoComplete="family-name" value={form.lastName} readOnly={Boolean(guestSession?.pmsRegisteredName)} onChange={e=>change('lastName',e.target.value)}/></label>
          <label>Phone number<input required type="tel" maxLength={30} autoComplete="tel" value={form.phone} disabled={Boolean(guestSession)} onChange={e=>change('phone',e.target.value)} placeholder="(713) 555-0123"/></label>
          <label>Email address<input required type="email" maxLength={160} autoComplete="email" value={form.email} onChange={e=>change('email',e.target.value)} placeholder="guest@example.com"/></label>
        </div>
+       <label style={{display:'flex',flexDirection:'row',gap:10,alignItems:'flex-start'}}>
+        <input type="checkbox" style={{width:18,height:18,marginTop:3}} checked={form.smsUpdatesConsent}
+         onChange={e=>setForm(p=>({...p,smsUpdatesConsent:e.target.checked}))}/>
+        <span>Send me SMS updates about this stay request and its status at the number provided. Message and data rates may apply; reply STOP to opt out. Not promotional messages.</span>
+       </label>
        <label>Special requests (optional)<textarea rows={3} maxLength={600} value={form.notes} onChange={e=>change('notes',e.target.value)} placeholder="Accessibility requests, expected arrival time, etc."/></label>
        <div aria-hidden="true" className={styles.honeypot}><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={e=>change('website',e.target.value)}/></label></div>
        <p className={styles.disclaimer}>By submitting, you consent to being contacted about this stay request by phone or email. The front desk will verify and scan your government-issued photo ID at check-in according to hotel policy; no ID image or ID number is collected by this website. Please do not enter payment card numbers or ID details here.</p>
