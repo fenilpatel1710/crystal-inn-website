@@ -1,11 +1,37 @@
 import './globals.css';
 import type {Metadata} from 'next';
 
-// Site-wide identity: platform brand, never a specific hotel's name in the browser tab.
-// Per-property pages can add hotel-specific titles later using route metadata.
+const brandName='Crystal Inn Hotels & Stays';
+const description='Discover Crystal Inn hotels and stays. Explore our locations, rooms, amenities and guest services, and request your stay.';
+
+// Brand-first homepage metadata; property-specific content remains on its own routes.
 export const metadata:Metadata={
- title:{default:'Crystal Inn Hotels & Stays',template:'%s | Crystal Inn Hotels & Stays'},
- description:'Find Crystal Inn hotels and stays. Explore locations, rooms, guest services, and request your stay.',
- icons:{icon:[{url:'/icon.svg',type:'image/svg+xml'}],shortcut:'/icon.svg'}
+ metadataBase:new URL('https://crystalinnstay.com'),
+ applicationName:brandName,
+ title:{default:brandName,template:'%s | '+brandName},
+ description,
+ openGraph:{type:'website',siteName:brandName,title:brandName,description},
+ icons:{
+  icon:[{url:'/favicon.ico',type:'image/x-icon',sizes:'48x48'}],
+  shortcut:'/favicon.ico'
+ }
 };
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
+
+const websiteStructuredData={
+ '@context':'https://schema.org',
+ '@type':'WebSite',
+ '@id':'https://crystalinnstay.com/#website',
+ url:'https://crystalinnstay.com/',
+ name:brandName,
+ alternateName:'Crystal Inn',
+ description
+};
+
+export default function RootLayout({children}:{children:React.ReactNode}){
+ return <html lang="en">
+  <head>
+   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(websiteStructuredData)}}/>
+  </head>
+  <body>{children}</body>
+ </html>;
+}
