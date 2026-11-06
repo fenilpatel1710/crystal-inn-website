@@ -8,17 +8,23 @@ export async function GET(req:NextRequest){
  const env=guestEnv();
  if(!env.db)return NextResponse.json({error:'Guest profile temporarily unavailable.'},{status:503,headers:guestHeaders});
  try{
-  const [p,link]=await Promise.all([
+  const [p,link,registered]=await Promise.all([
    env.db.prepare('SELECT first_name,last_name,email FROM portal_guest_profiles WHERE portal_user_id=? AND hotel_id=?')
     .bind(guest.user_id,guest.hotel_id).first<{first_name:string;last_name:string;email:string}>(),
    env.db.prepare("SELECT id FROM portal_guest_lumen_links WHERE portal_user_id=? AND hotel_id=? AND status='verified' AND revoked_at IS NULL LIMIT 1")
-    .bind(guest.user_id,guest.hotel_id).first<{id:string}>()
+    .bind(guest.user_id,guest.hotel_id).first<{id:string}>(),
+   env.db.prepare(`SELECT n.first_name,n.last_name FROM portal_guest_verified_pms_names n
+     JOIN portal_guest_lumen_links l ON l.portal_user_id=n.portal_user_id
+      AND l.hotel_id=n.hotel_id AND l.lumen_guest_id=n.lumen_guest_id
+     WHERE n.portal_user_id=? AND n.hotel_id=? AND l.status='verified' AND l.revoked_at IS NULL LIMIT 1`)
+    .bind(guest.user_id,guest.hotel_id).first<{first_name:string;last_name:string}>()
   ]);
   return NextResponse.json({
    authenticated:true,hotelId:guest.hotel_id,hotelName:guest.display_name,
    phone:guest.phone_e164,
    profile:p?{firstName:p.first_name,lastName:p.last_name,email:p.email}:null,
    existingPmsLinkVerified:Boolean(link),
+   pmsRegisteredName:registered?{firstName:registered.first_name,lastName:registered.last_name}:null,
    pmsConnected:false,
    governmentIdVerification:'at_front_desk'
   },{headers:guestHeaders});
@@ -27,7 +33,7 @@ export async function GET(req:NextRequest){
   return NextResponse.json({
    authenticated:true,hotelId:guest.hotel_id,hotelName:guest.display_name,
    phone:guest.phone_e164,profile:null,profileSetupPending:true,
-   existingPmsLinkVerified:false,pmsConnected:false,
+   existingPmsLinkVerified:false,pmsRegisteredName:null,pmsConnected:false,
    governmentIdVerification:'at_front_desk'
   },{headers:guestHeaders});
  }

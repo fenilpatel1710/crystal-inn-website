@@ -8,6 +8,12 @@ export async function GET(req:NextRequest){
  const rooms=await a.db.prepare('SELECT id,display_name,description,image_url,is_active FROM hotel_room_types WHERE hotel_id=? ORDER BY display_name').bind(a.hotelId).all();
  const reservations=await a.db.prepare(`SELECT reference,guest_name,check_in,check_out,rooms_count,status,created_at
  FROM hotel_reservations WHERE hotel_id=? ORDER BY created_at DESC LIMIT 100`).bind(a.hotelId).all();
- return NextResponse.json({hotel,rooms:rooms.results,reservations:reservations.results,email:a.email},{headers:noStore});
+ const legacy=a.hotelId==='crystal-inn-northwest-290'
+  ?await a.db.prepare(`SELECT public_reference AS reference,
+     first_name||' '||last_name AS guest_name,check_in,check_out,rooms_count,
+     booking_status AS status,created_at
+     FROM reservations ORDER BY created_at DESC LIMIT 100`).all()
+  :{results:[]};
+ return NextResponse.json({hotel,rooms:rooms.results,reservations:[...legacy.results,...reservations.results],email:a.email},{headers:noStore});
  }catch{return NextResponse.json({error:'Hotel database not initialized.'},{status:503,headers:noStore})}
 }

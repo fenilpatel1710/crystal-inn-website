@@ -1,23 +1,15 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { NextRequest, NextResponse } from 'next/server';
 import {guestSession} from '../../../lib/guest/auth';
+import {dispatchReservationNotifications} from '../../../lib/reservation-notifications';
+import type {DB} from '../../../lib/admin/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-interface D1Statement {
-  bind(...values: (string | number | null)[]): D1Statement;
-  first<T>(): Promise<T | null>;
-  run(): Promise<unknown>;
-}
-interface D1Database {
-  prepare(query: string): D1Statement;
-  batch(statements: D1Statement[]): Promise<unknown[]>;
-}
 const allowedRoomTypes = new Set(['King Non-Smoking', 'King Smoking', 'Queen Non-Smoking', 'No preference']);
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const text = (value: unknown, max: number) => typeof value === 'string' ? value.trim().slice(0, max) : '';
-const safe = (value: string) => value.replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] || c));
 const noStore = {'Cache-Control': 'no-store'};
 const PILOT_HOTEL_ID = 'crystal-inn-northwest-290';
 function usPhoneE164(phone:string) {
@@ -47,7 +39,7 @@ export async function POST(request: NextRequest) {
     checkIn:text(input.checkIn,10), checkOut:text(input.checkOut,10), roomType:text(input.roomType,35),
     rooms:Number(input.rooms), guests:Number(input.guests), firstName:text(input.firstName,70),
     lastName:text(input.lastName,70), phone:text(input.phone,30), email:text(input.email,160),
-    notes:text(input.notes,600)
+    notes:text(input.notes,600),smsUpdatesConsent:input.smsUpdatesConsent===true
   };
   // Derive hotel-local calendar date without depending on locale-specific order.
   const chicagoParts = new Intl.DateTimeFormat('en-US', {
@@ -67,10 +59,10 @@ export async function POST(request: NextRequest) {
   if(!emailPattern.test(v.email)) return invalid('Enter a valid email address.');
   if(!/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(usPhoneE164(v.phone))) return invalid('Enter a valid US phone number with area code.');
 
-  let db: D1Database;
+  let db: DB;
   try {
     const context = getCloudflareContext();
-    const env = context.env as typeof context.env & {DB?: D1Database};
+    const env = context.env as typeof context.env & {DB?: DB};
     if (!env.DB) throw Error('DB binding not present');
     db = env.DB;
   } catch {
@@ -88,6 +80,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({error:'For your signed-in guest profile, use the mobile number you verified by SMS, or sign out to request for another guest.'},{status:400,headers:noStore});
   }
 
+  // Prefer the canonical PMS name only when the portal/PMS link was separately
+  // ownership-verified and a trusted PMS name snapshot exists. Never infer this
+  // from phone number or a self-edited profile.
+  let pmsName:{first_name:string;last_name:string}|null=null;
+  if(portalUserId){
+   try{
+    pmsName=await db.prepare(`SELECT n.first_name,n.last_name FROM portal_guest_lumen_links l
+      JOIN portal_guest_verified_pms_names n ON n.portal_user_id=l.portal_user_id
+        AND n.hotel_id=l.hotel_id AND n.lumen_guest_id=l.lumen_guest_id
+      WHERE l.portal_user_id=? AND l.hotel_id=? AND l.status='verified'
+        AND l.revoked_at IS NULL LIMIT 1`)
+      .bind(portalUserId,PILOT_HOTEL_ID).first<{first_name:string;last_name:string}>();
+   }catch{
+    return NextResponse.json({error:'Guest identity records are not ready. Apply migration 0012 and retry.'},{status:503,headers:noStore});
+   }
+  }
+  if(pmsName){v.firstName=pmsName.first_name;v.lastName=pmsName.last_name}
+  const nameSource=pmsName?'verified_pms':'guest_entered';
+
   // A browser-generated key allows safe retries after network interruptions.
   const rawKey = request.headers.get('X-Reservation-Request-Key') || '';
   const idempotencyKey = /^[0-9a-f-]{36}$/i.test(rawKey) ? rawKey : null;
@@ -100,20 +111,21 @@ export async function POST(request: NextRequest) {
 
   const id = crypto.randomUUID();
   const reference = 'CI-'+crypto.randomUUID().replace(/-/g,'').slice(0,12).toUpperCase();
-  const mailId = crypto.randomUUID();
   try {
-    // D1 batch is transactional: the request and pending notification are saved together.
+    // Reservation and independent notification intentions save together.
+    const channels=['property_request_email','guest_request_email',
+      ...(v.smsUpdatesConsent?['guest_request_sms']:[])];
     const writes=[
       db.prepare(`INSERT INTO reservations
         (id,public_reference,idempotency_key,first_name,last_name,phone_e164,email,room_type_label,
-         check_in,check_out,rooms_count,guests_count,special_requests,booking_status,lumen_sync_status)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'request_received','not_started')`)
-        .bind(id,reference,idempotencyKey,v.firstName,v.lastName,v.phone,v.email,v.roomType,
-              v.checkIn,v.checkOut,v.rooms,v.guests,v.notes || null),
-      db.prepare(`INSERT INTO event_outbox
-        (id,reservation_id,event_type,delivery_status,dedupe_key)
-        VALUES (?,?,'reservation_email','pending',?)`)
-        .bind(mailId,id,'reservation_email:'+id),
+         check_in,check_out,rooms_count,guests_count,special_requests,booking_status,lumen_sync_status,
+         sms_updates_consent,guest_name_source)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'request_received','not_started',?,?)`)
+        .bind(id,reference,idempotencyKey,v.firstName,v.lastName,phoneE164,v.email,v.roomType,
+              v.checkIn,v.checkOut,v.rooms,v.guests,v.notes || null,v.smsUpdatesConsent?1:0,nameSource),
+      ...channels.map(channel=>db.prepare(`INSERT INTO reservation_notification_jobs
+        (id,reservation_id,hotel_id,channel) VALUES (?,?,?,?)`)
+        .bind(crypto.randomUUID(),id,PILOT_HOTEL_ID,channel)),
       db.prepare(`INSERT INTO reservation_audit_log (id,reservation_id,action,actor_type)
         VALUES (?,?,'request_received','guest')`).bind(crypto.randomUUID(),id)
     ];
@@ -144,40 +156,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({error:'Unable to save your request. Please call 713-993-6567.'},{status:503});
   }
 
-  // Email is best-effort. Database persistence is never rolled back if email is unavailable.
-  const key = process.env.RESEND_API_KEY;
-  const to = process.env.RESERVATION_NOTIFY_EMAIL;
-  const from = process.env.RESERVATION_FROM_EMAIL;
-  let notification: 'sent' | 'pending' = 'pending';
-  if (key && to && from) {
-    const fields = [
-      ['Reference',reference],['Arrival',v.checkIn],['Departure',v.checkOut],['Room preference',v.roomType],
-      ['Rooms',String(v.rooms)],['Guests',String(v.guests)],['First name',v.firstName],['Last name',v.lastName],
-      ['Phone',v.phone],['Email',v.email],['Notes',v.notes||'(none)']
-    ];
-    const body = '<h2>New Crystal Inn reservation request — not confirmed</h2><p>Check room availability and rate in Lumen. This request is safely saved in D1, but not booked in Lumen.</p><table border="1" cellpadding="8">'+fields.map(([k,value])=>'<tr><th align="left">'+safe(k)+'</th><td>'+safe(value)+'</td></tr>').join('')+'</table>';
-    try {
-      const result = await fetch('https://api.resend.com/emails', {
-        method:'POST',
-        headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':reference},
-        body:JSON.stringify({from,to:[to],subject:'New stay REQUEST '+reference+' — '+v.checkIn,html:body,reply_to:v.email}),
-        signal:AbortSignal.timeout(8000)
-      });
-      if (result.ok) {
-        notification = 'sent';
-        try {
-          await db.prepare(`UPDATE event_outbox SET delivery_status='delivered',attempts=1,
-            last_attempt_at=CURRENT_TIMESTAMP,delivered_at=CURRENT_TIMESTAMP WHERE id=?`).bind(mailId).run();
-        } catch { console.error('Request mail sent but delivery-status update failed'); }
-      } else {
-        console.error('Reservation mail provider failed',result.status);
-      }
-    } catch { console.error('Reservation notification attempt failed'); }
-  }
+  // Provider acceptance is best effort, durable outbox tracks each channel.
+  // These are REQUEST RECEIVED notices — not room/price confirmations.
+  const delivery=await dispatchReservationNotifications(db,id);
   return NextResponse.json({
     reference,
     status:'Request received — awaiting staff confirmation',
-    notification,
-    message:notification === 'pending' ? 'Request saved, but front-desk notification is not confirmed. Please call the hotel to follow up.' : undefined
+    notification:delivery.propertyEmail==='accepted'?'sent':'pending',
+    delivery,
+    message:delivery.propertyEmail!=='accepted'
+      ?'Request saved, but front-desk email acceptance is not confirmed. Please call the hotel to follow up.'
+      :undefined
   },{status:201,headers:noStore});
 }
