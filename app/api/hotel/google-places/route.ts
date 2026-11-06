@@ -64,7 +64,7 @@ export async function POST(req:NextRequest){
   if(!placeIdPattern.test(id))return NextResponse.json({error:'Invalid Place ID.'},{status:400,headers:noStore});
   const details=await fetch('https://places.googleapis.com/v1/places/'+encodeURIComponent(id),{
    headers:{'X-Goog-Api-Key':key,
-    'X-Goog-FieldMask':'id,displayName,formattedAddress,googleMapsLinks.writeAReviewUri,googleMapsUri'},
+    'X-Goog-FieldMask':'id,displayName,formattedAddress,googleMapsLinks,googleMapsUri'},
    cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(7000)
   });
   if(!details.ok)return NextResponse.json({error:'Unable to verify the selected Google listing (HTTP '+details.status+').'},
