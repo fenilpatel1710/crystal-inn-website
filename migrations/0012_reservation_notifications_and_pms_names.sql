@@ -5,6 +5,11 @@
 ALTER TABLE reservations ADD COLUMN sms_updates_consent INTEGER NOT NULL DEFAULT 0 CHECK(sms_updates_consent IN (0,1));
 ALTER TABLE reservations ADD COLUMN guest_name_source TEXT NOT NULL DEFAULT 'guest_entered' CHECK(guest_name_source IN ('guest_entered','verified_pms'));
 
+-- Prevent two website bookings from claiming the same confirmed Lumen booking code.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_legacy_confirmed_lumen_booking_code
+ON reservations(lumen_booking_code)
+WHERE booking_status='confirmed' AND lumen_booking_code IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS hotel_reservation_settings (
   hotel_id TEXT PRIMARY KEY REFERENCES hotels(id) ON DELETE CASCADE,
   booking_notification_email TEXT,
