@@ -25,14 +25,24 @@
 
 ## Cloudflare Worker secrets and operational settings
 
-**Email with Resend** (the existing booking code already attempted Resend, but the new code uses Cloudflare Worker bindings rather than process.env):
+**Email with Google Workspace via the Gmail API** (Resend is no longer used by reservation notifications):
 
-```text
-RESEND_API_KEY=<encrypted Resend API credential>
-RESERVATION_FROM_EMAIL=<verified sending domain mailbox, e.g. reservations@verified-domain.example>
-```
+Set up a dedicated Google Workspace mailbox that exists on the verified Workspace domain, or an authorized send-as alias. The website sends guest and front-desk emails from that mailbox through the Gmail API. The receiving property address may remain `crystalinngessner@gmail.com` and is configured separately under Hotel Admin.
 
-Resend requires sending domain verification (DKIM/SPF) for production. The domain's existing Microsoft mail hosting for incoming email can stay separate; set DNS carefully so sending setup does not break Microsoft inbound mail. The property booking inbox is set in hotel-admin; it is NOT hard-coded in Worker secrets.
+1. In <https://console.cloud.google.com>, create/select a Google Cloud project under the Workspace organization. Enable **Gmail API**.
+2. Configure the app's Google Auth Platform consent screen as **Internal** if the Workspace organization permits this. Create a **Web application OAuth client**. Authorize the exact sender account only with `https://www.googleapis.com/auth/gmail.send` and **offline** access; have a developer perform the initial interactive OAuth authorization-code flow, securely capturing the refresh token outside of chat and GitHub. Use a production/internal authorization configuration so the refresh token is not subject to the short testing expiration for external OAuth apps.
+3. Store the following in **Cloudflare → Workers & Pages → crystal-inn-website → Settings → Variables and Secrets**. Secrets must be encrypted, not committed:
+   ```text
+   GOOGLE_WORKSPACE_EMAIL_ENABLED=false
+   GOOGLE_WORKSPACE_FROM_EMAIL=<the actual authorized Google Workspace sender mailbox>
+   GOOGLE_WORKSPACE_OAUTH_CLIENT_ID=<Google OAuth 2 client ID>
+   GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET=<encrypted OAuth client secret>
+   GOOGLE_WORKSPACE_OAUTH_REFRESH_TOKEN=<encrypted offline-refresh token with gmail.send permission>
+   ```
+4. After Google Workspace successfully authorizes the mailbox and the website build is deployed, switch `GOOGLE_WORKSPACE_EMAIL_ENABLED=true`. Then send a controlled test request and inspect the property Gmail inbox and sender Workspace **Sent** folder. Never claim delivery just because Gmail API returned a message ID.
+5. Do **not** change Workspace inbound MX, SPF, or DKIM for this integration; Gmail API uses the existing mailbox identity and domain configuration, not a new third-party outbound domain.
+
+Google API integration uses `POST https://oauth2.googleapis.com/token` to refresh a short-lived access token, then `POST https://gmail.googleapis.com/gmail/v1/users/me/messages/send` with a base64url-encoded MIME message. The code is HTTP-only and compatible with Cloudflare Workers. Quotas and applicable Google API billing thresholds must be checked in the owning Google Cloud project. Gmail send API does **not** expose a send-idempotency key: if the request outcome is uncertain, the corresponding notification job stays in `processing` for manual review against the sending mailbox's Sent folder before retrying.
 
 **SMS with Twilio Programmable Messaging** — distinct from Twilio Verify OTP:
 
@@ -51,7 +61,7 @@ The source contains no real credentials or tokens.
 ## What code now handles
 
 - `app/api/reservations/route.ts`: writes request + notification jobs in one D1 transaction; uses approved PMS name if one is independently verified; returns per-channel provider acceptance, never claims hotel confirmation.
-- `lib/reservation-notifications.ts`: chooses the hotel-specific inbox, sends Resend transactional messages and optionally Twilio SMS, tracks each channel independently. Provider acceptance is NOT guaranteed delivery. Resend uses a stable idempotency key per job.
+- `lib/reservation-notifications.ts`: chooses the hotel-specific inbox, sends Google Workspace Gmail API transactional messages and optionally Twilio SMS, tracks each channel independently. Provider acceptance is NOT guaranteed delivery. Gmail API has no send-idempotency key, so ambiguous send outcomes require manual reconciliation.
 - `app/api/hotel/reservation-notifications/route.ts`: hotel-scoped settings, provider readiness, job counts and manual retry by CI reference. Only NW290 legacy requests can be retried. Retries skip already accepted messages and refuse unknown processing outcomes that might produce duplicate SMS.
 - `app/api/hotel/reservations/confirm/route.ts`: Northwest 290 hotel-manager-only, explicit staff attestation and mandatory PMS booking reference. Atomically updates website booking status and enqueues confirmed guest email/SMS, without writing anything to Lumen.
 - `app/api/hotel/dashboard/route.ts`: also shows existing Northwest 290 legacy website requests in its own hotel-admin reservations table, never in another hotel's view.
