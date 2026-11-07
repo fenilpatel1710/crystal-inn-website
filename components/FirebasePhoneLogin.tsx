@@ -1,6 +1,6 @@
 'use client';
-import {useId,useRef,useState,type FormEvent} from 'react';
-import {initializeApp,getApps,getApp,type FirebaseOptions} from 'firebase/app';
+import {useEffect,useId,useRef,useState,type FormEvent} from 'react';
+import {initializeApp,getApps,type FirebaseOptions} from 'firebase/app';
 import {getAuth,RecaptchaVerifier,signInWithPhoneNumber,setPersistence,browserSessionPersistence,signOut,type ConfirmationResult} from 'firebase/auth';
 
 export type FirebaseWebConfig={apiKey:string;authDomain:string;projectId:string;appId:string};
@@ -20,6 +20,7 @@ export default function FirebasePhoneLogin({hotelId,config,onAuthenticated}:Prop
  const [error,setError]=useState('');
  const confirmation=useRef<ConfirmationResult|null>(null);
  const verifier=useRef<RecaptchaVerifier|null>(null);
+ useEffect(()=>()=>{try{verifier.current?.clear()}catch{}},[]);
  const setupAuth=async()=>{
   const options:FirebaseOptions={apiKey:config.apiKey,authDomain:config.authDomain,projectId:config.projectId,appId:config.appId};
   const app=getApps().find(a=>a.name==='crystal-inn-guest')||initializeApp(options,'crystal-inn-guest');
@@ -86,7 +87,7 @@ export default function FirebasePhoneLogin({hotelId,config,onAuthenticated}:Prop
    {error&&<p className="ci-guest-error" role="alert">{error}</p>}
    {message&&<p className="ci-guest-notice" role="status">{message}</p>}
    <button type="submit" disabled={busy||!hotelId}>{busy?'Please wait…':step==='code'?'Verify & sign in':'Send verification code'}</button>
-   {step==='code'&&<button type="button" className="ci-guest-secondary" disabled={busy} onClick={()=>{confirmation.current=null;setStep('phone');setCode('');setError('');setMessage('')}}>Use another number</button>}
+   {step==='code'&&<button type="button" className="ci-guest-secondary" disabled={busy} onClick={()=>{confirmation.current=null;try{verifier.current?.clear()}catch{}verifier.current=null;setStep('phone');setCode('');setError('');setMessage('')}}>Use another number</button>}
   </form>
   <p className="ci-guest-disclaimer">Your phone is verified online. Government-issued ID is checked at the front desk, not uploaded here.</p>
  </div>;
