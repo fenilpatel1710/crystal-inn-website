@@ -633,3 +633,35 @@
 @media(max-width:720px){
  .ci-room-carousel .ci-gallery-arrow{width:40px;height:48px;opacity:1}
 }
+
+
+/* Guest-facing editorial polish. Scoped to public Crystal pages only. */
+.ci-site{--navy:#102d50;--blue:#1b4677;--blue2:#366493;--pale:#f7f8fa;--text:#27394d;--muted:#69788a;--line:#e8ebef; font-family:Arial,Helvetica,sans-serif}
+.ci-site .ci-utility{background:#102d50}
+.ci-site .ci-header{box-shadow:none;border-bottom:1px solid #e9ebee}
+.ci-site .ci-navbar{min-height:72px}
+.ci-site .ci-nav button{font-weight:600;letter-spacing:.01em}
+.ci-site .ci-nav-cta{background:#153b65;border-radius:4px}
+.ci-site .ci-nav-cta:hover{background:#102d50}
+.ci-site .ci-hero{min-height:570px;background-position:center 48%}
+.ci-site .ci-hero h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.055em;line-height:1.05;font-size:clamp(46px,6.6vw,83px);margin:22px 0}
+.ci-site .ci-hero-copy>p{font-size:17px;line-height:1.7;max-width:490px}
+.ci-site .ci-hero-actions{margin-top:27px}
+.ci-site .ci-btn{border-radius:4px}
+.ci-site .ci-btn-blue{background:#153b65}
+.ci-site .ci-btn-blue:hover{background:#102d50}
+.ci-site .ci-booking-widget{box-shadow:0 14px 38px #172d4617;border-radius:6px}
+.ci-site .ci-booking-widget input,.ci-site .ci-booking-widget select{background:#fff;border-radius:4px}
+.ci-site .ci-section{padding-top:76px;padding-bottom:76px}
+.ci-site .ci-section-head h2,.ci-site .ci-rewards-copy h2{letter-spacing:-.035em;font-weight:400}
+.ci-site .ci-eyebrow{font-size:10px;letter-spacing:.16em}
+.ci-site .ci-amenity{border:1px solid #ebedf0;border-radius:5px;padding:25px;box-shadow:none}
+.ci-site .ci-amenity:hover{box-shadow:0 10px 20px #102d500d}
+.ci-site .ci-amenity-icon{border-radius:4px;background:#f1f4f7;color:#153b65}
+.ci-site .ci-rooms-section{background:#f8f9fa}
+.ci-site .ci-hotel-card{border-radius:5px;box-shadow:0 6px 20px #16283d0d}
+.ci-site .ci-rewards-feature{border-radius:6px;background:linear-gradient(115deg,#102d50,#264b72)}
+.ci-site .ci-bottom-grid article{border-radius:5px;background:#f8f9fb}
+.ci-site .ci-footer{background:#102842}
+@media(max-width:780px){.ci-site .ci-hero{min-height:500px}.ci-site .ci-navbar{min-height:68px}}
+@media(max-width:570px){.ci-site .ci-hero h1{font-size:46px}.ci-site .ci-hero-copy>p{font-size:15px}.ci-site .ci-section{padding-top:58px;padding-bottom:58px}.ci-site .ci-booking-wrap{margin-top:-42px}}
