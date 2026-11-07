@@ -78,7 +78,6 @@ export async function POST(req:NextRequest){
    :centralEmail;
   let notification:'sent'|'pending'='pending';
   if(validEmail(recipient)){
-   const env=getCloudflareContext().env as unknown as Record<string,unknown>;
    const text=[
     'New Crystal Inn guest inquiry',
     'Reference: '+id,
@@ -93,6 +92,7 @@ export async function POST(req:NextRequest){
     'This inquiry is also stored under Super Admin → Guest Inquiries.'
    ].join('\n');
    try{
+    const env=getCloudflareContext().env as unknown as Record<string,unknown>;
     const result=await sendGoogleWorkspaceMail(env,{
      to:recipient,subject:'Crystal Inn inquiry: '+subject,text,replyTo:email
     });
