@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {fullHotelAddress} from '../lib/hotel-address';
 
 type Props={
  hotelName:string;
@@ -9,13 +10,16 @@ type Props={
  region:string;
  placeId?:string;
  compact?:boolean;
+ hotelId?:string;
+ showExternalLink?:boolean;
 };
 
-export default function HotelMapTile({hotelName,address,city,region,placeId='',compact=false}:Props){
+export default function HotelMapTile({hotelName,address,city,region,placeId='',compact=false,hotelId='',showExternalLink=true}:Props){
  const [zoom,setZoom]=useState(16);
  // Never place a city-centre pin when no street address has been provided.
  const street=address.trim();
- const query=[hotelName,street,city,region].filter(Boolean).join(', ');
+ const fullAddress=fullHotelAddress(street,city,region,hotelId);
+ const query=[hotelName,fullAddress].filter(Boolean).join(', ');
  const iframeUrl='https://www.google.com/maps?q='+encodeURIComponent(query)+'&z='+zoom+'&output=embed';
  const mapsUrl='https://www.google.com/maps/search/?'+new URLSearchParams({
   api:'1',query,...(placeId?{query_place_id:placeId}:{})
@@ -30,9 +34,9 @@ export default function HotelMapTile({hotelName,address,city,region,placeId='',c
     <div>
      <h2 style={{margin:'0 0 7px',color:'#153c69',fontSize:23}}>Hotel location · Google Maps</h2>
      <p style={{margin:'0 0 4px',color:'#3b5c7a',fontWeight:700}}>{hotelName}</p>
-     <p style={{margin:0,color:'#617791'}}>{street||'Complete the street address under Hotel details to display this property on the map.'}</p>
+     <p style={{margin:0,color:'#617791'}}>{fullAddress||'Complete the street address under Hotel details to display this property on the map.'}</p>
     </div>
-    {street&&<a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{color:'#134d92',fontWeight:700}}>Open in Google Maps ↗</a>}
+    {street&&showExternalLink&&<a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{color:'#134d92',fontWeight:700}}>Open in Google Maps ↗</a>}
    </div>
    {street?<div style={{position:'relative'}}>
     <iframe
@@ -60,8 +64,9 @@ export default function HotelMapTile({hotelName,address,city,region,placeId='',c
     Map preview unavailable until a street address is saved for this hotel.
    </div>}
    {street&&<p style={{margin:'11px 0 0',fontSize:12,color:'#667990'}}>
-    Use + and − to zoom, drag the map to explore nearby streets, or open the full Google Maps view.
-    {placeId?' The Google Maps link uses this hotel’s saved Place ID.':' Verify the marker and save the correct Google Place ID under Amenities & Google.'}
+    Use + and − to zoom or drag the map to explore nearby streets.
+    {showExternalLink&&placeId?' The Google Maps link uses this hotel’s saved Place ID.':''}
+    {!placeId?' Verify the marker and save the correct Google Place ID under Amenities & Google.':''}
    </p>}
   </section>;
 }
