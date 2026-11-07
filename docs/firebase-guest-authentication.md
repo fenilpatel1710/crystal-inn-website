@@ -18,7 +18,7 @@ This migration replaces **Twilio Verify only for guest sign-in**. It does **not*
 2. Authentication → Sign-in method → enable **Phone**.
 3. Authentication → Settings → SMS region policy: **allow only United States** initially. For new projects the default may deny all regions.
 4. Authentication → Settings → Authorized domains: add `crystalinnstay.com` (and `www.crystalinnstay.com` if used). Add any Cloudflare preview hostname only if you trust it. Localhost is not an approved production phone-auth domain.
-5. Project settings → Your apps → add a **Web** app. Copy **API key**, **authDomain**, **projectId**, **appId** (these are client app identifiers, not service-account private keys).
+5. The Crystal Inn Firebase Web app is already registered as project `crystal-inn-a9174`. Its public Web SDK identifiers are configured in `wrangler.jsonc` on this PR. Do not add a second Web app unless you deliberately create a different environment.
 6. Authentication → Settings → abuse prevention: review Firebase SMS quotas and usage. Set Cloud Billing **budget alerts**. Budget alerts are not guaranteed hard caps. Add test phone numbers for development to avoid charges.
 7. Confirm the account's SMS terms, phone-number consent and privacy wording before launching.
 
@@ -29,16 +29,16 @@ In Cloudflare Workers → `crystal-inn-website` → Settings → Variables and S
 | Setting | Value |
 | --- | --- |
 | `GUEST_AUTH_PROVIDER` | `firebase` (only after testing) |
-| `FIREBASE_PROJECT_ID` | Firebase project ID |
-| `FIREBASE_API_KEY` | Firebase Web app API key |
-| `FIREBASE_AUTH_DOMAIN` | e.g. `your-project.firebaseapp.com` |
-| `FIREBASE_APP_ID` | Firebase Web app ID |
+| `FIREBASE_PROJECT_ID` | Already included in `wrangler.jsonc` public `vars` |
+| `FIREBASE_API_KEY` | Already included in `wrangler.jsonc` public `vars` |
+| `FIREBASE_AUTH_DOMAIN` | Already included in `wrangler.jsonc` public `vars` |
+| `FIREBASE_APP_ID` | Already included in `wrangler.jsonc` public `vars` |
 | `GUEST_AUTH_PEPPER` | Keep existing random secret (32+ chars) |
 | `DB` | Keep existing D1 binding |
 
-Do **not** upload Firebase Admin service account JSON or secret private keys to the repository.
+These four Web SDK configuration values identify the Firebase app; they are **not credentials** that grant administrative access. Verify that the API key is restricted to Firebase APIs in Google Cloud Console and set authentication limits. Do **not** upload Firebase Admin service account JSON or secret private keys to the repository.
 
-Deploy the validated PR to production; then flip `GUEST_AUTH_PROVIDER` to `firebase` and disable `GUEST_OTP_ENABLED` to stop use of Twilio for login. Keep existing Twilio config only if still needed for separate messaging integrations.
+Once verified with a test phone number on a trusted preview, deploy the validated PR to production; then flip `GUEST_AUTH_PROVIDER` to `firebase` in Cloudflare's environment variables and disable `GUEST_OTP_ENABLED` to stop use of Twilio for login. The provider remains **Twilio** by default until the flag is explicitly set. Keep existing Twilio config only if still needed for separate messaging integrations.
 
 ## Test before launch
 
