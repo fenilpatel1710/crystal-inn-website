@@ -9,6 +9,7 @@ type Room={id:string;display_name:string;description:string;image_url:string|nul
 type Reservation={reference:string;guest_name:string;check_in:string;check_out:string;rooms_count:number;status:string};
 type Rate={room_type_id:string;stay_date:string;rate_cents:number|null;allotment:number;stop_sell:number};
 type GuestReview={id:string;rating:number;review_text:string;status:'published'|'hidden';created_at:string};
+type GuestInquiry={id:string;guest_name:string;email:string;phone:string|null;subject:string;message:string;status:string;created_at:string};
 type GoogleListing={placeId:string;name:string;address:string;mapsUrl:string};
 export default function HotelAdmin(){
  const [notifyEmail,setNotifyEmail]=useState(''),[notifyPublicEmail,setNotifyPublicEmail]=useState('');
@@ -22,9 +23,27 @@ export default function HotelAdmin(){
  const [features,setFeatures]=useState<FeatureFlags>(emptyFeatures());
  const [googlePlaceId,setGooglePlaceId]=useState(''),[googleReviewUrl,setGoogleReviewUrl]=useState('');
  const [googlePlacesKeyReady,setGooglePlacesKeyReady]=useState(false);
+ const [googleRatingTest,setGoogleRatingTest]=useState('');
+ const [googleRatingBusy,setGoogleRatingBusy]=useState(false);
+ const [hotelInquiries,setHotelInquiries]=useState<GuestInquiry[]>([]);
+ const [hotelInquiriesError,setHotelInquiriesError]=useState('');
  const [googleListings,setGoogleListings]=useState<GoogleListing[]>([]);
  const [googleSearchBusy,setGoogleSearchBusy]=useState(false),[googleSearchNotice,setGoogleSearchNotice]=useState('');
  const [googleSelectedListing,setGoogleSelectedListing]=useState('');
+ async function checkGoogleRating(){
+  setGoogleRatingBusy(true);setGoogleRatingTest('');
+  try{
+   const d=await request('/api/hotel/google-places/status');
+   setGoogleRatingTest(d.ready
+    ?'Connected: '+Number(d.rating).toFixed(1)+' stars ('+(d.userRatingCount??'unknown')+' Google ratings). Check the public Guest reviews tab.'
+    :d.reason||'Google rating is unavailable.');
+  }catch(e){setGoogleRatingTest(e instanceof Error?e.message:'Google Places test failed.')}
+  finally{setGoogleRatingBusy(false)}
+ }
+ async function loadHotelInquiries(){
+  try{const d=await request('/api/hotel/inquiries');setHotelInquiries(Array.isArray(d.inquiries)?d.inquiries:[]);setHotelInquiriesError('');}
+  catch(e){setHotelInquiriesError(e instanceof Error?e.message:'Unable to load inquiries.');}
+ }
  async function findGoogleListing(){
   setGoogleSearchBusy(true);setGoogleSearchNotice('');setGoogleListings([]);
   try{
@@ -60,7 +79,7 @@ export default function HotelAdmin(){
  async function refresh(){try{const [d,r,p]=await Promise.all([request('/api/hotel/dashboard'),request('/api/hotel/rates'),request('/api/hotel/profile')]);setHotel(d.hotel);
  setProfileDescription(p.hotel?.description||'');setProfileImage(p.hotel?.hero_image_url||'');setProfilePhone(p.hotel?.public_phone||'');setProfileEmail(p.hotel?.public_email||'');setProfileAddress(p.hotel?.address_text||'');setRooms(d.rooms);setReservations(d.reservations);setRates(r.rates);
  // Optional feature/review tables require migration 0011. Existing hotel admin must still load without it.
- await Promise.all([loadFeatureSettings(),loadReviews(),loadLumenStatus(),loadReservationNotificationSettings()]);
+ await Promise.all([loadFeatureSettings(),loadReviews(),loadLumenStatus(),loadReservationNotificationSettings(),loadHotelInquiries()]);
  }catch{setHotel(null)}}
  useEffect(()=>{void refresh();fetch('/api/hotel/locations').then(r=>r.json()).then(d=>{if(Array.isArray(d.hotels)){setLocations(d.hotels);if(d.hotels.length===1)setHotelId(d.hotels[0].id)}}).catch(()=>{})},[]);
  async function loadReservationNotificationSettings(){
@@ -160,7 +179,7 @@ export default function HotelAdmin(){
  <div className="ci-console-body"><p className="ci-kicker">PROPERTY CONTROL CENTER</p><h1>{hotel.display_name}</h1><p>{hotel.city}, {hotel.region} · Your account is restricted to this property.</p>{error&&<p role="alert" className="ci-error">{error}</p>}{notice&&<p role="status" className="ci-notice">{notice}</p>}
  <div className="ci-summary"><article><strong>{reservations.length}</strong>Reservation records</article><article><strong>{rooms.length}</strong>Room categories</article><article><strong>{rates.length}</strong>Nightly rate entries</article></div>
  <HotelMapTile hotelName={hotel.display_name} address={profileAddress} city={hotel.city} region={hotel.region} hotelId={hotel.id} placeId={googlePlaceId}/>
- <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:25}}>{[['reservations','Reservations'],['rooms','Rooms & descriptions'],['room-photos','Room photos'],['rates','Rates & availability'],['profile','Hotel details'],['features','Amenities & Google'],['reviews','Guest reviews'],['notifications','Reservation notifications'],['lumen','Lumen API']].map(([key,label])=><button key={key} style={{padding:'12px 17px',border:'1px solid #d7e3ef',background:tab===key?'#173d70':'white',color:tab===key?'white':'#193b61',cursor:'pointer'}} onClick={()=>setTab(key)}>{label}</button>)}</div>
+ <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:25}}>{[['reservations','Reservations'],['rooms','Rooms & descriptions'],['room-photos','Room photos'],['rates','Rates & availability'],['profile','Hotel details'],['features','Amenities & Google'],['inquiries','Guest inquiries'],['reviews','Guest reviews'],['notifications','Reservation notifications'],['lumen','Lumen API']].map(([key,label])=><button key={key} style={{padding:'12px 17px',border:'1px solid #d7e3ef',background:tab===key?'#173d70':'white',color:tab===key?'white':'#193b61',cursor:'pointer'}} onClick={()=>setTab(key)}>{label}</button>)}</div>
  {tab==='reservations'&&<section className="ci-panel"><h2>Hotel reservations</h2><p>Hotel-specific website records. Lumen PMS synchronization is not active.</p><div className="ci-table"><table><thead><tr><th>Reference</th><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Rooms</th><th>Status</th></tr></thead><tbody>{reservations.map(r=><tr key={r.reference}><td>{r.reference}</td><td>{r.guest_name}</td><td>{r.check_in}</td><td>{r.check_out}</td><td>{r.rooms_count}</td><td>{r.status}</td></tr>)}</tbody></table></div>
   {notifySupported&&<form onSubmit={confirmPmsBooking} style={{marginTop:22}}>
    <h3>Confirm a website request after verifying it in Lumen</h3>
@@ -200,7 +219,13 @@ export default function HotelAdmin(){
    <strong>Live Google rating setup</strong>
    <p style={{margin:'8px 0 2px'}}>Places API key: <strong>{googlePlacesKeyReady?'Detected in Cloudflare':'Not configured'}</strong></p>
    <p style={{margin:'2px 0 8px'}}>Hotel Place ID: <strong>{googlePlaceId.trim()?'Entered':'Not entered'}</strong></p>
-   <small>Both are required for actual Google star ratings. A detected API key does not guarantee billing, API restrictions, or the selected Place ID are valid. Save the listing and check the public Reviews tab.</small>
+   <small>Both are required for actual Google star ratings. A detected API key does not guarantee billing, API restrictions, or the selected Place ID are valid. Save the listing before testing.</small>
+   <div style={{marginTop:12}}>
+    <button type="button" disabled={busy||googleRatingBusy} onClick={()=>void checkGoogleRating()}>
+     {googleRatingBusy?'Checking Google Places…':'Test live Google rating'}
+    </button>
+   </div>
+   {googleRatingTest&&<p role="status" style={{margin:'12px 0 0'}}>{googleRatingTest}</p>}
   </div>
   <div style={{background:'#f2f7fc',border:'1px solid #d8e5f3',padding:17,borderRadius:8,margin:'12px 0 20px'}}>
    <h3 style={{margin:'0 0 8px'}}>Find this hotel's Google listing</h3>
@@ -223,6 +248,21 @@ export default function HotelAdmin(){
   <p className="ci-small">Selecting a result fills the real Place ID and official Google link when available. Click Save to publish changes. Real star ratings require the server-side GOOGLE_PLACES_API_KEY. Google Travel search links may not open the review composer directly.</p>
   <button disabled={busy}>Save amenities and Google settings</button>
  </form></section>}
+ {tab==='inquiries'&&<section className="ci-panel">
+  <h2>Guest inquiries for this hotel</h2>
+  <p>Messages from Contact Crystal Inn that selected this specific property appear here. All inquiries are also saved in Super Admin → Guest Inquiries. Reservation requests are handled separately.</p>
+  <button type="button" disabled={busy} onClick={()=>void loadHotelInquiries()}>Refresh inquiries</button>
+  {hotelInquiriesError&&<p role="alert" className="ci-error">{hotelInquiriesError}</p>}
+  {hotelInquiries.length===0&&!hotelInquiriesError&&<p>No guest inquiries submitted for this hotel yet.</p>}
+  <div className="ci-table"><table><thead><tr><th>Date</th><th>Guest</th><th>Subject & message</th><th>Status</th></tr></thead>
+   <tbody>{hotelInquiries.map(q=><tr key={q.id}>
+    <td>{q.created_at}</td>
+    <td>{q.guest_name}<p><a href={'mailto:'+q.email}>{q.email}</a></p><p>{q.phone||''}</p></td>
+    <td><strong>{q.subject}</strong><p style={{whiteSpace:'pre-wrap',maxWidth:480,overflowWrap:'anywhere'}}>{q.message}</p></td>
+    <td>{q.status.replaceAll('_',' ')}</td>
+   </tr>)}</tbody>
+  </table></div>
+ </section>}
  {tab==='reviews'&&<section className="ci-panel"><h2>Guest website reviews</h2>
  <p>These are first-party reviews by SMS-verified hotel accounts. Phone verification does not prove a past stay. You may hide inappropriate content or restore it.</p>
  <button type="button" onClick={()=>void loadReviews()} disabled={busy}>Refresh reviews</button>
