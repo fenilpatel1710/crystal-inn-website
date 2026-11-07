@@ -2,6 +2,7 @@
 import {useEffect,useState,type KeyboardEvent} from 'react';
 import {useParams} from 'next/navigation';
 import '../../home-redesign.css';
+import '../../hospitality-premium.css';
 import HotelFeatures from '../../../components/HotelFeatures';
 import RoomPhotoCarousel from '../../../components/RoomPhotoCarousel';
 import HotelMapTile from '../../../components/HotelMapTile';
