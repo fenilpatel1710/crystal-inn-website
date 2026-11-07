@@ -2,7 +2,8 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import Link from 'next/link';
 import './guest-login.css';
-import FirebasePhoneLogin,type {FirebaseWebConfig} from '../../../components/FirebasePhoneLogin';
+import FirebasePhoneLogin from '../../../components/FirebasePhoneLogin';
+import type {FirebaseWebConfig} from '../../../components/FirebasePhoneLogin';
 
 type Hotel={id:string;slug:string;display_name:string;city:string;region:string};
 type Session={authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string;
