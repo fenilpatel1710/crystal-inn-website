@@ -68,7 +68,7 @@ export default function FirebasePhoneLogin({hotelId,config,onAuthenticated}:Prop
    await post('/api/guest/auth/firebase/session',{hotelId,idToken});
    // We keep only the website's secure HttpOnly session cookie, not a
    // lasting Firebase browser login on a shared lobby computer.
-   await signOut(result.user.auth).catch(()=>{});
+   await signOut(await setupAuth()).catch(()=>{});
    setCode('');setMessage('Phone verified.');
    await onAuthenticated();
   }catch(ex){setError(ex instanceof Error?ex.message:'Invalid or expired code.')}
