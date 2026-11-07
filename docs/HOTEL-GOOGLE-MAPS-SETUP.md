@@ -30,3 +30,23 @@
 - Google Maps Platform API requests can incur usage charges. Embedding a simple Google Maps search map does not require the Places API key, but Google controls iframe availability and interactive controls.
 - No D1 migration is necessary. Uses the existing hotel `address_text` and `hotel_google_profiles` columns and the existing authenticated Hotel Admin API.
 - Google Places API search and rating/review responses are subject to Google's terms, usage restrictions and available fields. Do not treat the top search result as automatically verified.
+
+## Public hotel address and one external Maps link (November 2026)
+
+- **Public hotel → Location & contact → Find Us** displays the formatted full mailing address (street, city, state, and ZIP when saved). For Northwest 290 only, the existing stored street address `6850 Gessner Rd` is completed with its published `Houston, TX 77040` ZIP; this is a temporary explicit fallback, not a guess for other properties.
+- **Public hotel → Google Maps tile:** the duplicate website-owned "Open in Google Maps" link in the tile header has been removed. The single website-controlled external Maps link remains in the **Find Us** card. Google's **native "Open in Maps"** control inside the embedded iframe is managed by Google and cannot be removed through the website safely.
+- **Hotel Admin map:** still has its own "Open in Google Maps" link, because it appears on the separate manager dashboard and has no public Find Us card.
+- Future hotels should save their complete street mailing address with ZIP under **Hotel Admin → Hotel details**. The shared formatter avoids repeating the city/state if already in the saved address.
+
+## Getting live Google star ratings on the public Reviews tile
+
+The public tile already fetches Google ratings via `GET /api/public/hotels/[slug]/google`, using a server-only Places API (New) request. Gmail OAuth is completely separate and cannot access Maps ratings.
+
+1. Open <https://console.cloud.google.com/> under the appropriate Google Cloud project.
+2. Enable **Places API (New)** with an active **Google Maps Platform billing account**.
+3. Create a distinct **Places API (New)-restricted** API key. In production Cloudflare Worker `crystal-inn-website` → **Settings → Variables and Secrets**, save `GOOGLE_PLACES_API_KEY` as an encrypted secret. Do not paste keys into hotel admin, Gmail variables, GitHub, or guest-facing code.
+4. Open **Hotel Admin → Amenities & Google**. The setup indicator shows whether a key is detected and a Place ID is entered. Click **Find this hotel on Google Maps**, confirm the correct Google business listing by name and address, select it, and click **Save amenities and Google settings**. A Google Travel search link is not a substitute for a Place ID.
+5. Open **Public hotel → Guest reviews** to test that the Google rating and total Google ratings count show on their **own** tile; hotel website reviews remain separately rated.
+6. If the rating stays unavailable, verify the configured Place ID and Google Cloud billing/API activation/key restriction. Google may return a denied or empty rating for an invalid or incorrect Place ID, or if the Google API key is invalid. The admin "key detected" flag is not a verified successful API call.
+
+**Costs:** Place Details (New) with `rating,userRatingCount` belongs to Google's Enterprise SKU; requesting `reviews` for recent review text can trigger the costlier Enterprise + Atmosphere SKU. The existing integration requests both rating and reviews, so enable budgets/alerts and review pricing and data-refresh requirements before rolling out to many properties. Source: <https://developers.google.com/maps/documentation/places/web-service/place-details> and <https://developers.google.com/maps/documentation/places/web-service/get-api-key>.

@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server';
+import {getCloudflareContext} from '@opennextjs/cloudflare';
 import {authorize,noStore} from '../../../../lib/platform/auth';
 import {HOTEL_FEATURES,emptyFeatures,mergedFeatures,validGoogleReviewUrl,type FeatureFlags} from '../../../../lib/hotel-features';
 export const runtime='nodejs';export const dynamic='force-dynamic';
@@ -10,7 +11,9 @@ export async function GET(req:NextRequest){
    a.db.prepare('SELECT feature_key,enabled FROM hotel_features WHERE hotel_id=?').bind(a.hotelId).all<{feature_key:string;enabled:number}>(),
    a.db.prepare('SELECT place_id,write_review_url FROM hotel_google_profiles WHERE hotel_id=?').bind(a.hotelId).first<{place_id:string|null;write_review_url:string|null}>()
   ]);
-  return NextResponse.json({features:mergedFeatures(features.results,h?.rewards_enabled),googlePlaceId:google?.place_id||'',googleReviewUrl:google?.write_review_url||''},{headers:noStore});
+  const env=getCloudflareContext().env as unknown as Record<string,unknown>;
+  const googlePlacesApiConfigured=typeof env.GOOGLE_PLACES_API_KEY==='string'&&env.GOOGLE_PLACES_API_KEY.trim().length>0;
+  return NextResponse.json({features:mergedFeatures(features.results,h?.rewards_enabled),googlePlaceId:google?.place_id||'',googleReviewUrl:google?.write_review_url||'',googlePlacesApiConfigured},{headers:noStore});
  }catch{return NextResponse.json({error:'Hotel features unavailable. Apply migration 0011.'},{status:503,headers:noStore})}
 }
 export async function PUT(req:NextRequest){
