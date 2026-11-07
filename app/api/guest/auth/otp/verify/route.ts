@@ -1,7 +1,9 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {guestEnv,guestConfigured,sameOrigin,validPhone,hotelActive,incrementLimit,twilioRequest,authError,guestHeaders,GUEST_COOKIE,hash,newSessionToken} from '../../../../../../lib/guest/auth';
+import {firebaseSettings} from '../../../../../../lib/guest/firebase';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function POST(req:NextRequest){
+ if(firebaseSettings().provider==='firebase')return authError('Use Firebase phone sign-in.',410);
  if(!sameOrigin(req))return authError('Invalid request origin.',403);
  const e=guestEnv();if(!guestConfigured(e)||!e.db)return authError('Guest login is not configured.',503);
  let data:{hotelId?:unknown;phone?:unknown;code?:unknown};
