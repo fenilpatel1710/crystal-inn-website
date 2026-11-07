@@ -2,6 +2,7 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import Link from 'next/link';
 import './guest-login.css';
+import FirebasePhoneLogin,type {FirebaseWebConfig} from '../../../components/FirebasePhoneLogin';
 
 type Hotel={id:string;slug:string;display_name:string;city:string;region:string};
 type Session={authenticated:boolean;hotelId?:string;hotelName?:string;phone?:string;
@@ -14,6 +15,8 @@ export default function GuestLogin(){
  const [phone,setPhone]=useState('');
  const [code,setCode]=useState('');
  const [step,setStep]=useState<Step>('phone');
+ const [firebaseMode,setFirebaseMode]=useState<'loading'|'twilio'|'ready'|'missing'>('loading');
+ const [firebaseConfig,setFirebaseConfig]=useState<FirebaseWebConfig|null>(null);
  const [session,setSession]=useState<Session|null>(null);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -33,6 +36,24 @@ export default function GuestLogin(){
   }).finally(()=>{if(alive)setLoading(false)});
   return()=>{alive=false};
  },[]);
+ useEffect(()=>{
+  let alive=true;
+  fetch('/api/guest/auth/firebase/config',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+   if(!alive)return;
+   if(d.provider==='firebase'){
+    if(d.configured&&d.config){setFirebaseConfig(d.config);setFirebaseMode('ready');}
+    else setFirebaseMode('missing');
+   }else setFirebaseMode('twilio');
+  }).catch(()=>{if(alive)setFirebaseMode('missing')});
+  return ()=>{alive=false};
+ },[]);
+ async function firebaseAuthenticated(){
+  const response=await fetch('/api/guest/me',{cache:'no-store'});
+  if(!response.ok)throw Error('Phone verified but guest session is unavailable.');
+  const data=await response.json();
+  if(!data.authenticated)throw Error('Guest sign-in did not complete.');
+  setSession(data);setNotice('Phone verified. Welcome to Crystal Inn.');
+ }
  function normalizedPhone(){
   const digits=phone.replace(/\D/g,'');
   if(digits.length===10)return '+1'+digits;
@@ -95,7 +116,11 @@ export default function GuestLogin(){
     </div>
     <button type="button" onClick={()=>void logout()} disabled={busy}>Sign out</button>
    </section>:<section className="ci-guest-card">
-    <form onSubmit={step==='phone'?sendCode:verifyCode}>
+    {firebaseMode==='loading'?<p>Preparing secure guest sign-in…</p>:firebaseMode==='missing'?<p role="alert" className="ci-guest-error">Guest phone sign-in is being configured. Please contact your hotel for help.</p>:firebaseMode==='ready'&&firebaseConfig?<>
+     <label>Hotel property<select required value={hotelId} onChange={e=>setHotelId(e.target.value)}><option value="">Select your hotel</option>{hotels.map(h=><option key={h.id} value={h.id}>{h.display_name} — {h.city}, {h.region}</option>)}</select></label>
+     {selected&&<p className="ci-guest-selected">Guest access for <strong>{selected.display_name}</strong></p>}
+     <FirebasePhoneLogin key={hotelId} hotelId={hotelId} config={firebaseConfig} onAuthenticated={firebaseAuthenticated}/>
+    </>:<form onSubmit={step==='phone'?sendCode:verifyCode}>
      <label>Hotel property<select required disabled={busy||step==='code'} value={hotelId} onChange={e=>{setHotelId(e.target.value);setError('');setNotice('')}}><option value="">Select your hotel</option>{hotels.map(h=><option key={h.id} value={h.id}>{h.display_name} — {h.city}, {h.region}</option>)}</select></label>
      {selected&&<p className="ci-guest-selected">Guest access for <strong>{selected.display_name}</strong></p>}
      <label>Mobile phone number<input required autoComplete="tel-national" type="tel" placeholder="(555) 555-0123" value={phone} onChange={e=>setPhone(e.target.value)} disabled={busy||step==='code'}/></label>
@@ -104,8 +129,8 @@ export default function GuestLogin(){
      {notice&&<p role="status" className="ci-guest-notice">{notice}</p>}
      <button type="submit" disabled={busy||!hotelId}>{busy?'Processing…':step==='code'?'Verify & sign in':'Text me a verification code'}</button>
      {step==='code'&&<button type="button" className="ci-guest-secondary" disabled={busy} onClick={()=>{setStep('phone');setCode('');setError('')}}>Change phone or hotel</button>}
-    </form>
-    <p className="ci-guest-disclaimer">Real SMS verification is required; there are no demo codes. Service activation depends on the hotel's configured authentication provider. A phone number alone does not authorize access to another guest's Lumen records.</p>
+    </form>}
+    <p className="ci-guest-disclaimer">Phone verification does not automatically link a guest to existing Lumen records. Bring photo ID to the front desk at check-in.</p>
    </section>}
    <p className="ci-guest-footer">Need help? <Link href="/contact">Contact guest services</Link>. <Link href="/">Back to Crystal Inn</Link>.</p>
   </div>
