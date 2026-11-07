@@ -28,3 +28,16 @@
 .ci-google-review-author span{margin-left:auto;font-size:11px;color:#687a8a}
 .ci-google-reviews a{color:#19558f;font-size:13px}
 .ci-google-reviews .ci-review-list article{background:#f8fafc}
+
+/* Keep the SMS sign-in action attached to its own Crystal Inn review card. */
+.ci-review-score .ci-review-site-button{
+ display:inline-flex;align-items:center;justify-content:center;
+ margin-top:4px;padding:11px 17px;border-radius:5px;
+ background:#173d70;color:#fff!important;text-decoration:none;
+ font-weight:700;font-size:13px;min-height:42px;
+}
+.ci-review-score .ci-review-site-button:hover,
+.ci-review-score .ci-review-site-button:focus-visible{
+ background:#235b9b;outline:2px solid #edaa41;outline-offset:2px;
+}
+#ci-review-form{scroll-margin-top:100px}
