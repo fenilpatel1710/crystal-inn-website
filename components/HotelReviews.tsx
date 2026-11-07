@@ -55,6 +55,18 @@ export default function HotelReviews({slug}:{slug:string}){
     {data?.summary.count?<><span className="ci-review-number">{Number(data.summary.average).toFixed(1)} ★</span>
      <small>{data.summary.count} first-party {data.summary.count===1?'review':'reviews'}</small></>:<p>No Crystal Inn website reviews yet.</p>}
     <small>Reviews written by SMS-verified hotel accounts, not necessarily verified stays.</small>
+    {data&&!data.canReview&&<>
+     <a className="ci-review-site-button" href={'/guest/login?hotel='+encodeURIComponent(slug)}>
+      Sign in to leave a review ↗
+     </a>
+     <small>Sign in with SMS for this hotel to post your Crystal Inn website review.</small>
+    </>}
+    {data?.canReview&&data.ownReview?.status!=='hidden'&&
+     <a className="ci-review-site-button" href="#ci-review-form">
+      {data.ownReview?'Edit your review ↓':'Write a website review ↓'}
+     </a>}
+    {data?.canReview&&data.ownReview?.status==='hidden'&&
+     <small>Your earlier review is under moderation.</small>}
    </div>
   </div>
   {google?.reviews?.length?<section className="ci-google-reviews" aria-label="Google Maps guest reviews">
@@ -71,7 +83,7 @@ export default function HotelReviews({slug}:{slug:string}){
       {r.reviewUrl&&<a href={r.reviewUrl} target="_blank" rel="noopener noreferrer">View original review on Google Maps ↗</a>}
     </article>)}</div>
    </section>:null}
-  {data?.canReview?<form className="ci-review-form" onSubmit={submit}>
+  {data?.canReview?<form className="ci-review-form" id="ci-review-form" onSubmit={submit}>
     <h3>{data.ownReview?'Update your hotel review':'Write a Crystal Inn review'}</h3>
     {data.ownReview?.status==='hidden'?<p>Your earlier review is under moderation. Contact the hotel for assistance.</p>:<>
      <label>Your rating<select value={rating} onChange={e=>setRating(e.target.value)} required>
@@ -82,10 +94,7 @@ export default function HotelReviews({slug}:{slug:string}){
      <small>One website review per verified account for this hotel. You may update it. Please avoid sharing personal information.</small>
      <button type="submit" disabled={busy}>{busy?'Saving…':data.ownReview?'Update review':'Post review'}</button>
     </>}
-   </form>:<p className="ci-review-signin">
-     To leave a Crystal Inn website review, <a href={'/guest/login?hotel='+encodeURIComponent(slug)}>sign in with SMS for this hotel</a>.
-     A login for a different hotel cannot post here.
-   </p>}
+   </form>:null}
   {notice&&<p role="status" className="ci-review-notice">{notice}</p>}
   {error&&<p role="alert" className="ci-review-error">{error}</p>}
   <h3 className="ci-review-heading">Crystal Inn guest feedback</h3>
