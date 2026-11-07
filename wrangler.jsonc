@@ -11,6 +11,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "crystal-inn-a9174",
+    "FIREBASE_API_KEY": "AIzaSyDtflMZ70_1dKQOprUPf4UCXK6Y1_FH_8s",
+    "FIREBASE_AUTH_DOMAIN": "crystal-inn-a9174.firebaseapp.com",
+    "FIREBASE_APP_ID": "1:278005330411:web:a50cdf59929a101b3269ae"
+  },
   "observability": {
     "enabled": true
   },
