@@ -3,6 +3,7 @@ import {useState,FormEvent,useEffect} from 'react';
 import './home-redesign.css';
 import './hospitality-premium.css';
 import HotelDirectory from '../components/HotelDirectory';
+import {HotelCurtainLink} from '../components/HotelCurtainTransition';
 
 type Page='home'|'rooms'|'rewards'|'reviews'|'account';
 type IconName='calendar'|'bed'|'coffee'|'wifi'|'car'|'map'|'gift'|'arrow'|'clock'|'shield'|'phone'|'check'|'user'|'star'|'spark'|'shower'|'credit';
@@ -109,9 +110,34 @@ const navItems:[Page,string][]=[['home','Home'],['rooms','Our Hotels'],['rewards
    <div className="ci-shell ci-booking-wrap"><div className="ci-booking-topline"><span><Icon name="calendar" size={15}/> PLAN YOUR STAY</span><span>Dates first. The rest is easy.</span></div><form className="ci-booking-widget" onSubmit={submitStay}><div className="ci-booking-title"><span className="ci-icon-tile"><Icon name="calendar" size={23}/></span><div><strong>Let’s get you settled.</strong><small>Select dates to begin</small></div></div><label><span>CHECK-IN</span><input aria-label="Check-in date" type="date" required value={checkIn} onChange={e=>setCheckIn(e.target.value)}/></label><label><span>CHECK-OUT</span><input aria-label="Check-out date" type="date" required min={checkIn} value={checkOut} onChange={e=>setCheckOut(e.target.value)}/></label><label><span>GUESTS</span><select aria-label="Number of guests" value={guests} onChange={e=>setGuests(e.target.value)}>{[1,2,3,4,5,6,7,8].map(x=><option key={x} value={x}>{x} {x===1?'guest':'guests'}</option>)}</select></label><button className="ci-btn ci-btn-blue" type="submit">Continue <Icon name="arrow" size={18}/></button></form>{message&&<p className="ci-inline-notice" role="alert">{message}</p>}</div>
    <HotelDirectory/>
    <section className="ci-section ci-experience-section"><div className="ci-shell"><div className="ci-section-label"><span>02</span> THE GOOD STUFF <span className="ci-section-rule"/></div><div className="ci-section-head"><div><p className="ci-eyebrow">EVERYDAY COMFORT</p><h2>Settle in. Stay a while.</h2></div><p>A comfortable room, the everyday essentials, and a welcoming place to come back to. See each hotel for its amenities.</p></div><div className="ci-amenities">{amenities.map(([ico,title,desc])=><article className="ci-amenity" key={title}><span className="ci-amenity-icon"><Icon name={ico} size={26}/></span><h3>{title}</h3><p>{desc}</p></article>)}</div><div className="ci-feature-banner"><span className="ci-feature-banner-icon"><Icon name="spark" size={27}/></span><div><strong>It's the little things.</strong><p>The basics done well, with room to unwind.</p></div><a href="/request-stay">Plan your visit <Icon name="arrow" size={19}/></a></div></div></section>
-   <section className="ci-section ci-rooms-section"><div className="ci-shell"><div className="ci-section-label"><span>03</span> A CLOSER LOOK <span className="ci-section-rule"/></div><div className="ci-section-head"><div><p className="ci-eyebrow">OUR HOTELS</p><h2>Find your kind of stay.</h2></div><p>Take a look around before you arrive. See real property details, room options, and what makes each stay different.</p></div>
-   {featured.length?<div className="ci-featured-grid">{featured.map(h=><article className="ci-hotel-card" key={h.id}><div className="ci-hotel-card-image">{h.featured_image_url?<img src={h.featured_image_url} alt={'Guest room at '+h.display_name} loading="lazy"/>:<div className="ci-hotel-placeholder">CRYSTAL INN</div>}</div><div className="ci-hotel-card-content"><span className="ci-hotel-location">{h.city}, {h.region}</span><h3>{h.display_name}</h3><p>{h.description||'See the rooms, details, and location before you visit.'}</p><div className="ci-hotel-card-actions"><a href={'/hotels/'+encodeURIComponent(h.slug)}>View hotel →</a></div></div></article>)}</div>:<div className="ci-featured-empty"><p>More Crystal Inn properties will appear here soon.</p><a href="/#find-hotels">Browse all Crystal Inn locations →</a></div>}
-   </div></section>
+   <section className="ci-section ci-rooms-section ci-featured-hotels" id="featured-hotels" aria-labelledby="featured-hotels-title">
+    <div className="ci-shell">
+     <div className="ci-section-label"><span>03</span> FEATURED HOTELS <span className="ci-section-rule"/></div>
+     <div className="ci-section-head">
+      <div><p className="ci-eyebrow">SELECTED CRYSTAL INN STAYS</p><h2 id="featured-hotels-title">Featured Hotels</h2></div>
+      <p>A closer look at properties we're highlighting. To search every location, use <a className="ci-featured-directory-link" href="#find-hotels">Find a Hotel</a> above.</p>
+     </div>
+     {featured.length?<div className="ci-featured-grid">
+      {featured.map(h=><article className="ci-hotel-card ci-featured-hotel-card" key={h.id}>
+       <div className="ci-hotel-card-image ci-featured-card-image">
+        <HotelCurtainLink className="ci-hotel-photo-link" href={'/hotels/'+encodeURIComponent(h.slug)} aria-label={'Explore '+h.display_name}>
+         {h.featured_image_url?<img src={h.featured_image_url} alt={'View of '+h.display_name} loading="lazy"/>:<div className="ci-hotel-placeholder">CRYSTAL INN</div>}
+        </HotelCurtainLink>
+        <span className="ci-featured-ribbon">FEATURED HOTEL</span>
+       </div>
+       <div className="ci-hotel-card-content">
+        <span className="ci-hotel-location">{h.city}, {h.region}</span>
+        <h3><HotelCurtainLink className="ci-hotel-name-link" href={'/hotels/'+encodeURIComponent(h.slug)}>{h.display_name}</HotelCurtainLink></h3>
+        <p>{h.description||'Take a look at rooms, property details, and the location before you visit.'}</p>
+        <div className="ci-hotel-card-actions"><HotelCurtainLink href={'/hotels/'+encodeURIComponent(h.slug)}>Explore featured hotel →</HotelCurtainLink></div>
+       </div>
+      </article>)}
+     </div>:<div className="ci-featured-empty">
+      <p>We don't have any featured hotels right now. You can still browse all available Crystal Inn locations.</p>
+      <a href="#find-hotels">Find a Hotel →</a>
+     </div>}
+    </div>
+   </section>
    <section className="ci-section ci-rewards-section"><div className="ci-shell"><div className="ci-section-label"><span>04</span> LOYALTY REWARDS <span className="ci-section-rule"/></div><div className="ci-rewards-feature"><div className="ci-rewards-copy"><p className="ci-eyebrow ci-on-dark">CRYSTAL INN REWARDS</p><h2>Good stays have their perks.</h2><p>Stay with us again and enjoy rewards at participating locations. Check your hotel's program before booking.</p><button className="ci-btn ci-btn-white" onClick={()=>change('rewards')}>Explore rewards <Icon name="arrow" size={18}/></button></div><RewardsCard/></div></div></section>
    <section className="ci-contact-section"><div className="ci-shell"><div className="ci-section-label"><span>05</span> HERE TO HELP <span className="ci-section-rule"/></div><div className="ci-bottom-grid"><article><div className="ci-bottom-symbol"><Icon name="map" size={26}/></div><p className="ci-eyebrow">ALL LOCATIONS</p><h3>Find us around Houston.</h3><p>See where we're located and pick the hotel that works for your plans.</p><div className="ci-location-links">{hotelOptions.map(h=><a key={h.id} href={'/hotels/'+encodeURIComponent(h.slug)}>{h.display_name} · {h.city}, {h.region} <Icon name="arrow" size={15}/></a>)}</div></article><article><div className="ci-bottom-symbol"><Icon name="gift" size={26}/></div><p className="ci-eyebrow">GET IN TOUCH</p><h3>Need a hand?</h3><p>Have a question about your stay? Get in touch and we'll help you find the right place to ask.</p><a href="mailto:frontdesk@crystalinnstay.com">frontdesk@crystalinnstay.com <Icon name="arrow" size={17}/></a></article></div></div></section>
   </>}
