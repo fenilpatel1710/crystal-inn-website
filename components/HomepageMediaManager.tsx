@@ -56,7 +56,7 @@ export default function HomepageMediaManager(){
  }
  return <section className="ci-panel ci-homepage-media-manager">
   <h2>Homepage welcome photos</h2>
-  <p>Manage the large photo beside the <strong>Welcome to Houston</strong> stamp on the main Crystal Inn homepage. Add up to 8 real hotel images, select which one appears first, and edit the captions. Guests can browse the other photos with arrows.</p>
+  <p>Manage the large photo beside the <strong>Welcome to Houston</strong> stamp on the main Crystal Inn homepage. Add up to 8 real hotel images, select which one appears first, and edit the captions. If more than one image is uploaded, the homepage automatically rotates through the gallery every 6 seconds. Visitors can use transparent left and right arrows over the photo to navigate manually. The slideshow pauses while a visitor hovers or focuses it.</p>
   {error&&<p className="ci-error" role="alert">{error}</p>}
   {notice&&<p className="ci-notice" role="status">{notice}</p>}
   <form onSubmit={upload} className="ci-homepage-upload">
