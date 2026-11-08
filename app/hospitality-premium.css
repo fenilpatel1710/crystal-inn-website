@@ -310,108 +310,127 @@
 }
 
 
-/* BLUE + GOLD — visibly brighter Crystal Inn accents, with warm beige surfaces. */
-.ci-site {
- --ci-accent-blue:#2764bb;
- --ci-royal-blue:#1b58ae;
- --ci-highlight-blue:#e8f0fc;
- --ci-warm-gold:#c59e63;
- --ci-gold-pale:#f2e2c6;
- --ci-warm-beige:#f7efe3;
- --ci-paper:#fffcf7;
+/* BRAND LOCK — use Crystal Inn's existing logo blue #040AFF, not a new blue.
+   Pair with existing deep navy, restrained champagne-gold trim and warm beige. */
+.ci-site{
+ --ci-brand-blue:#040AFF;
+ --ci-deep-navy:#102747;
+ --ci-gold:#c59e63;
+ --ci-beige:#f7efe3;
  --ci-ink:#142e4e;
+ --blue:var(--ci-brand-blue);
+ --navy:var(--ci-deep-navy);
 }
-.ci-site .ci-header{border-bottom:3px solid #d6b175}
+.ci-site .ci-header{border-bottom:3px solid #c7a674}
 .ci-site .ci-nav button.ci-nav-active,
-.ci-site .ci-nav button:hover{color:var(--ci-accent-blue)}
-.ci-site .ci-nav button::after{background:#d2a65e;height:3px}
+.ci-site .ci-nav button:hover{color:var(--ci-brand-blue)}
+.ci-site .ci-nav button::after{background:var(--ci-gold);height:3px}
 .ci-site .ci-nav-cta,
-.ci-property-page .ci-property-topnav .ci-property-nav-cta{background:var(--ci-accent-blue)!important}
-.ci-site .ci-nav-cta:hover,
-.ci-property-page .ci-property-topnav .ci-property-nav-cta:hover{background:#174989!important}
-.ci-site .ci-hero::before{background:
- radial-gradient(circle at 28% 15%,#2c67ad6e,transparent 46%),
- linear-gradient(128deg,#0c2344 0%,#163e79 68%,#12355f 100%)!important}
-.ci-site .ci-hero-overline{color:#ebcd9b}
-.ci-site .ci-hero-overline-rule{height:3px;background:#e6b568}
-.ci-site .ci-hero h1 em{color:#f0d5a1}
-.ci-site .ci-hero-primary{
- background:#fffaf0!important;color:#184575!important;
- border:2px solid #e9c37d!important
+.ci-property-page .ci-property-topnav .ci-property-nav-cta{
+ background:var(--ci-deep-navy)!important;
+ border-bottom:3px solid var(--ci-brand-blue)!important;
 }
-.ci-site .ci-hero-primary:hover{background:#f4e6cb!important}
-.ci-site .ci-hero-text-link{border-color:#dfbd7a}
-.ci-site .ci-hero-facts svg{color:#edc47c}
+.ci-site .ci-nav-cta:hover,
+.ci-property-page .ci-property-topnav .ci-property-nav-cta:hover{
+ background:#1c3655!important
+}
+.ci-site .ci-nav-guest,.ci-property-page .ci-property-topnav .ci-property-nav-guest{border-color:#c7c5c1!important}
+.ci-site .ci-hero::before{background:
+ radial-gradient(circle at 28% 17%,#21457355,transparent 52%),
+ linear-gradient(128deg,#0b1f38,#143250 72%,#102b4c)!important}
+.ci-site .ci-hero-overline{color:#f0d5a1}
+.ci-site .ci-hero-overline-rule{height:3px;background:#d5aa6f}
+.ci-site .ci-hero h1 em{color:#f1d7a5}
+.ci-site .ci-hero-primary{background:#fffaf2!important;color:var(--ci-deep-navy)!important;border:2px solid #dbb579!important}
+.ci-site .ci-hero-primary:hover{background:#f3e7d1!important}
+.ci-site .ci-hero-text-link{border-color:#cba36a}
+.ci-site .ci-hero-facts svg{color:#e3bc7e}
 .ci-site .ci-hero-visual{border-color:#fff5e724;box-shadow:0 30px 60px #071a3f89}
 .ci-site .ci-hero-image-caption-index{color:#f5d49b}
-.ci-site .ci-hero-seal{background:#f5e7ca;color:#174c92;outline:2px solid #cc9e56;box-shadow:0 10px 30px #051d4099}
-.ci-site .ci-hero-seal strong{color:#19569f}
-.ci-site .ci-hero-photo-controls{
- position:absolute;right:17px;bottom:19px;z-index:5;
- display:flex;align-items:center;gap:10px;padding:6px 7px;
- border:1px solid #ffffff57;background:#0c2d4bc9;
- color:#fff;border-radius:6px;backdrop-filter:blur(7px)
+.ci-site .ci-hero-seal{background:#f5e7ca;color:var(--ci-deep-navy);outline:2px solid #c99f5b;box-shadow:0 10px 30px #051d4099}
+.ci-site .ci-hero-seal strong{color:var(--ci-deep-navy)}
+/* One visible image at a time; new slide gently reveals instead of flashing. */
+.ci-site .ci-hero-slide-image{animation:ci-hero-image-appear .65s ease both}
+@keyframes ci-hero-image-appear{from{opacity:.28}to{opacity:1}}
+/* Floating left/right controls over the photograph, transparent by default. */
+.ci-site .ci-hero-photo-arrow{
+ position:absolute;z-index:5;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;width:47px;height:58px;padding:0;
+ border:1px solid #ffffff55;border-radius:6px;
+ background:rgba(9,30,54,.26);color:#fff;
+ backdrop-filter:blur(3px);cursor:pointer;opacity:.8;
+ transition:background .2s,opacity .2s,border-color .2s;
 }
-.ci-site .ci-hero-photo-controls button{
- background:#fdf7ea;border:0;border-radius:4px;color:#164d8f;
- width:34px;height:34px;display:grid;place-items:center;
- font:400 27px/1 Georgia,serif;padding:0;cursor:pointer
+.ci-site .ci-hero-photo-arrow span{font:400 43px/1 Georgia,serif;margin-top:-6px;pointer-events:none}
+.ci-site .ci-hero-photo-prev{left:16px}
+.ci-site .ci-hero-photo-next{right:16px}
+.ci-site .ci-hero-photo-arrow:hover,.ci-site .ci-hero-photo-arrow:focus-visible{
+ opacity:1;background:rgba(9,30,54,.63);border-color:#f4d7a3
 }
-.ci-site .ci-hero-photo-controls button:hover{background:#e8c68d;color:#123b67}
-.ci-site .ci-hero-photo-controls>span{min-width:36px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em}
-.ci-site .ci-booking-topline{background:linear-gradient(90deg,#1553a8,#2876cd);color:#fff;border-radius:7px 7px 0 0}
-.ci-site .ci-booking-topline span:first-child svg{color:#ffdc9c}
+.ci-site .ci-hero-photo-arrow:active{background:rgba(9,30,54,.85)}
+.ci-site .ci-booking-topline{background:var(--ci-deep-navy);border-top:3px solid var(--ci-brand-blue);color:#fff;border-radius:7px 7px 0 0}
+.ci-site .ci-booking-topline span:first-child svg{color:#e9c58e}
 .ci-site .ci-booking-topline span:last-child{color:#e4edf9}
 .ci-site .ci-booking-widget{border:1px solid #d5d9d9;border-top:0;background:linear-gradient(180deg,#fff,#fffcf7)}
-.ci-site .ci-booking-widget .ci-icon-tile{background:#e8f1fc;color:#2061b2;border-color:#d8e4f5}
+.ci-site .ci-booking-widget .ci-icon-tile{background:#f1f0ff;color:var(--ci-brand-blue);border-color:#dddcff}
 .ci-site .ci-booking-widget label{border-color:#d6dfe9;background:#fff}
-.ci-site .ci-booking-widget label:focus-within{border-color:#2873d0;box-shadow:0 0 0 3px #3884d028}
-.ci-site .ci-booking-widget .ci-btn-blue{background:linear-gradient(125deg,#1a53aa,#2e76c8)!important;color:#fff}
-.ci-site .ci-booking-widget .ci-btn-blue:hover{background:#124890!important}
+.ci-site .ci-booking-widget label:focus-within{border-color:var(--ci-brand-blue);box-shadow:0 0 0 3px #040aff20}
+.ci-site .ci-booking-widget .ci-btn-blue{background:var(--ci-brand-blue)!important;color:#fff;border-radius:5px}
+.ci-site .ci-booking-widget .ci-btn-blue:hover{background:#0206c9!important}
 .ci-site .ci-hotels{background:linear-gradient(180deg,#fffaf2,#f7efe4);border-bottom-color:#e9dcca}
 .ci-site .ci-section-label{color:#745d3c}
-.ci-site .ci-section-label>span:first-child{color:#1d60b3}
-.ci-site .ci-section-rule{background:linear-gradient(90deg,#2d6bc1,#d0a86d,#e5dccf)}
-.ci-site .ci-eyebrow{color:#b17b31}
-.ci-site .ci-eyebrow:not(.ci-on-dark)::before{height:3px;background:#266ac2}
+.ci-site .ci-section-label>span:first-child{color:var(--ci-brand-blue)}
+.ci-site .ci-section-rule{background:linear-gradient(90deg,var(--ci-brand-blue),#d0a86d,#e5dccf)}
+.ci-site .ci-eyebrow{color:#a67834}
+.ci-site .ci-eyebrow:not(.ci-on-dark)::before{height:3px;background:var(--ci-brand-blue)}
 .ci-site .ci-section-head h2,
 .ci-site .ci-hotels .ci-section-head h2,
-.ci-site .ci-rooms-section .ci-section-head h2{color:#153a6c}
+.ci-site .ci-rooms-section .ci-section-head h2{color:var(--ci-deep-navy)}
 .ci-site .ci-hotel-card{border-color:#e5d9c8}
-.ci-site .ci-hotel-card:hover{border-color:#cea261;box-shadow:0 19px 46px #154a8c2b}
+.ci-site .ci-hotel-card:hover{border-color:#caa36c;box-shadow:0 19px 46px #142e4e22}
 .ci-site .ci-hotel-location{color:#986b2d}
-.ci-site .ci-hotel-card-actions a{background:#205eae;border-color:#205eae}
-.ci-site .ci-hotel-card-actions a:hover{background:#154a8a}
-.ci-site .ci-hotel-card-actions .ci-hotel-request{background:#fffaf1;color:#1f569b;border-color:#d3af79}
-.ci-site .ci-hotel-card-actions .ci-hotel-request:hover{background:#f4e8d3}
+.ci-site .ci-hotel-card-actions a{background:var(--ci-deep-navy);border-color:var(--ci-deep-navy)}
+.ci-site .ci-hotel-card-actions a:hover{background:var(--ci-brand-blue);border-color:var(--ci-brand-blue)}
+.ci-site .ci-hotel-card-actions .ci-hotel-request{background:#fffaf1;color:var(--ci-deep-navy);border-color:#d3af79}
+.ci-site .ci-hotel-card-actions .ci-hotel-request:hover{background:#f4e8d3;border-color:#c39f6a}
 .ci-site .ci-rooms-section{background:linear-gradient(180deg,#f5eadb,#fff9f0);border-top-color:#e5d2b7}
 .ci-site .ci-experience-section{background:#fffdf9}
 .ci-site .ci-amenity{background:linear-gradient(150deg,#fff,#fffaf3);border-color:#eadccc;border-bottom:3px solid #d9b582}
-.ci-site .ci-amenity:hover{border-color:#9ec2e7;border-bottom-color:#286ac2}
-.ci-site .ci-amenity-icon{background:#e9f2ff!important;border-color:#cadef3;color:#1d5fac!important}
+.ci-site .ci-amenity:hover{border-color:#a0a1ef;border-bottom-color:var(--ci-brand-blue)}
+.ci-site .ci-amenity-icon{background:#f1f0ff!important;border-color:#ddddff;color:var(--ci-brand-blue)!important}
 .ci-site .ci-amenity:nth-child(2n) .ci-amenity-icon{background:#fbf0da!important;border-color:#ead9b8;color:#8f642e!important}
-.ci-site .ci-feature-banner{background:linear-gradient(95deg,#e9f1fc,#f5e8d4);border:1px solid #d9c7aa;border-left:6px solid #2a6ab9}
-.ci-site .ci-feature-banner-icon{background:#1a5db0;color:#fff;border-color:#1a5db0}
-.ci-site .ci-feature-banner strong{color:#173e70}
-.ci-site .ci-feature-banner a{background:#2160b3;border-color:#2160b3}
-.ci-site .ci-feature-banner a:hover{background:#154986}
+.ci-site .ci-feature-banner{background:linear-gradient(95deg,#f0efff,#f5e8d4);border:1px solid #d9c7aa;border-left:6px solid var(--ci-brand-blue)}
+.ci-site .ci-feature-banner-icon{background:var(--ci-brand-blue);color:#fff;border-color:var(--ci-brand-blue)}
+.ci-site .ci-feature-banner strong{color:var(--ci-deep-navy)}
+.ci-site .ci-feature-banner a{background:var(--ci-deep-navy);border-color:var(--ci-deep-navy)}
+.ci-site .ci-feature-banner a:hover{background:var(--ci-brand-blue);border-color:var(--ci-brand-blue)}
 .ci-site .ci-rewards-section{background:#fff9ef}
 .ci-site .ci-rewards-feature,.ci-site .ci-rewards-section .ci-rewards-feature{
- background:radial-gradient(circle at 95% 0%,#2a6bb4a6,transparent 52%),linear-gradient(115deg,#0f2b51,#205596);
+ background:radial-gradient(circle at 92% 8%,#1a3864b0,transparent 50%),linear-gradient(115deg,#0f2b51,#1a3654);
  border:1px solid #d5ae6e
 }
-.ci-site .ci-contact-section{background:linear-gradient(120deg,#0b284c,#164577)}
+.ci-site .ci-contact-section{background:linear-gradient(120deg,#0b284c,#18364f)}
 .ci-site .ci-contact-section .ci-bottom-grid article{background:#ffffff0e;border-color:#d6b77e55}
-.ci-site .ci-contact-section .ci-bottom-symbol{background:#2469ba!important;color:#f7e4bd!important}
+.ci-site .ci-contact-section .ci-bottom-symbol{background:#ffffff16!important;color:#f7e4bd!important}
 .ci-site .ci-footer{background:#081d38;border-top:3px solid #cfaa6d}
 .ci-site .ci-inner{background:#fffaf2}
 .ci-property-page .ci-property-intro{background:linear-gradient(#fffdf8 75%,#ede6da 75%)}
-.ci-property-page .ci-property-quickbar button.is-active{border-color:#286bc3;color:#18559e;box-shadow:inset 0 4px 0 #cbaa75}
-.ci-property-page .ci-property-tab-frame{border-color:#a4bbd4}
+.ci-property-page .ci-property-quickbar button.is-active{
+ border-color:var(--ci-brand-blue);
+ color:var(--ci-deep-navy);
+ box-shadow:inset 0 4px 0 #cbaa75
+}
+.ci-property-page .ci-property-tab-frame{border-color:#a4aec4}
 .ci-property-page .ci-property-rooms-section,.ci-property-page .ci-property-location-section{background:#f6eee3}
-.ci-property-page .ci-property-bottom-cta{background:linear-gradient(105deg,#102d52,#195799)}
+.ci-property-page .ci-property-bottom-cta{background:linear-gradient(105deg,#102747,#18364f)}
 @media(max-width:620px){
- .ci-site .ci-hero-photo-controls{right:9px;bottom:10px;gap:6px}
- .ci-site .ci-hero-photo-controls button{width:30px;height:30px}
- .ci-site .ci-hero-image-caption{max-width:62%}
+ .ci-site .ci-hero-photo-arrow{width:40px;height:48px;opacity:.9}
+ .ci-site .ci-hero-photo-arrow span{font-size:35px}
+ .ci-site .ci-hero-photo-prev{left:8px}
+ .ci-site .ci-hero-photo-next{right:8px}
+ .ci-site .ci-hero-image-caption{max-width:58%;left:52px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ci-site .ci-hero-slide-image{animation:none}
+ .ci-site .ci-hero-photo-arrow{transition:none}
 }
