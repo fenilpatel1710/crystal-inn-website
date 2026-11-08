@@ -37,11 +37,29 @@ export default function Home(){
  const [page,setPage]=useState<Page>('home');
  const [selectedHotel,setSelectedHotel]=useState('');
  const [featured,setFeatured]=useState<{id:string;slug:string;display_name:string;city:string;region:string;description:string|null;featured_image_url:string|null}[]>([]);
+ const [heroPhotos,setHeroPhotos]=useState<{id:string;caption:string;url:string}[]>([]);
+ const [heroIndex,setHeroIndex]=useState(0);
  const [hotelOptions,setHotelOptions]=useState<{id:string;slug:string;display_name:string;city:string;region:string;rewards_enabled?:number}[]>([]);
  const [mobile,setMobile]=useState(false);
  const [message,setMessage]=useState('');
  const [checkIn,setCheckIn]=useState('');const [checkOut,setCheckOut]=useState('');const [guests,setGuests]=useState('2');
  useEffect(()=>{fetch('/api/public/hotels').then(r=>r.json()).then(d=>{if(Array.isArray(d.hotels))setHotelOptions(d.hotels)}).catch(()=>{});fetch('/api/public/featured').then(r=>r.json()).then(d=>{if(Array.isArray(d.hotels))setFeatured(d.hotels)}).catch(()=>{})},[]);
+ useEffect(()=>{
+  let active=true;
+  fetch('/api/public/homepage',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+   if(!active||!Array.isArray(d.photos))return;
+   const photos=d.photos.filter((p:unknown):p is {id:string;caption:string;url:string}=>{
+    if(!p||typeof p!=='object')return false;
+    const item=p as Record<string,unknown>;
+    return typeof item.id==='string'&&typeof item.caption==='string'&&typeof item.url==='string'&&
+      /^\/api\/public\/homepage\/photo\?id=[0-9a-f-]{36}$/.test(item.url);
+   });
+   setHeroPhotos(photos);
+   setHeroIndex(Math.max(0,photos.findIndex((p)=>p.id===d.activeId)));
+  }).catch(()=>{});
+  return()=>{active=false};
+ },[]);
+ const heroPhoto=heroPhotos[heroIndex];
  const change=(p:Page)=>{setPage(p);setMobile(false);setMessage('');window.scrollTo({top:0,behavior:'smooth'})};
  const submitStay=(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();if(!checkIn||!checkOut||checkOut<=checkIn){setMessage('Choose a checkout date after your arrival date.');return;}const p=new URLSearchParams({checkIn,checkOut,guests});window.location.href='/request-stay?'+p.toString()};
 const navItems:[Page,string][]=[['home','Home'],['rooms','Our Hotels'],['rewards','Rewards'],['reviews','Guest Reviews']];
@@ -62,9 +80,14 @@ const navItems:[Page,string][]=[['home','Home'],['rooms','Our Hotels'],['rewards
       <div className="ci-hero-facts" aria-label="What you can explore"><span><Icon name="bed" size={18}/> Room details</span><span><Icon name="map" size={18}/> Hotel locations</span><span><Icon name="phone" size={18}/> Direct contact</span></div>
      </div>
      <figure className="ci-hero-visual">
-      <img src={exterior} alt="Exterior of Crystal Inn Northwest 290 in Houston" fetchPriority="high" decoding="async"/>
-      <figcaption className="ci-hero-image-caption"><span className="ci-hero-image-caption-index">01 / HOUSTON</span><span>Crystal Inn Northwest 290</span></figcaption>
+      <img key={heroPhoto?.id||'default'} src={heroPhoto?.url||exterior} alt={heroPhoto?.caption||'Exterior of Crystal Inn Northwest 290 in Houston'} fetchPriority="high" decoding="async"/>
+      <figcaption className="ci-hero-image-caption"><span className="ci-hero-image-caption-index">{heroPhotos.length?String(heroIndex+1).padStart(2,'0')+' / '+String(heroPhotos.length).padStart(2,'0'):'01 / HOUSTON'}</span><span>{heroPhoto?.caption||'Crystal Inn Northwest 290'}</span></figcaption>
       <div className="ci-hero-seal" aria-hidden="true"><span>WELCOME TO</span><strong>HOUSTON</strong><span>YOUR STAY STARTS HERE</span></div>
+      {heroPhotos.length>1&&<div className="ci-hero-photo-controls" aria-label="Homepage photo gallery">
+       <button type="button" aria-label="Previous hotel photo" onClick={()=>setHeroIndex(i=>(i+heroPhotos.length-1)%heroPhotos.length)}><span aria-hidden="true">‹</span></button>
+       <span aria-live="polite">{heroIndex+1} / {heroPhotos.length}</span>
+       <button type="button" aria-label="Next hotel photo" onClick={()=>setHeroIndex(i=>(i+1)%heroPhotos.length)}><span aria-hidden="true">›</span></button>
+      </div>}
      </figure>
     </div>
    </section>
