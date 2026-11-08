@@ -308,3 +308,110 @@
 @media(prefers-reduced-motion:reduce){
  .ci-site .ci-hero-visual,.ci-site .ci-btn,.ci-site .ci-hotel-card,.ci-site .ci-hotel-card img,.ci-site .ci-nav button::after{transition:none}
 }
+
+
+/* BLUE + GOLD — visibly brighter Crystal Inn accents, with warm beige surfaces. */
+.ci-site {
+ --ci-accent-blue:#2764bb;
+ --ci-royal-blue:#1b58ae;
+ --ci-highlight-blue:#e8f0fc;
+ --ci-warm-gold:#c59e63;
+ --ci-gold-pale:#f2e2c6;
+ --ci-warm-beige:#f7efe3;
+ --ci-paper:#fffcf7;
+ --ci-ink:#142e4e;
+}
+.ci-site .ci-header{border-bottom:3px solid #d6b175}
+.ci-site .ci-nav button.ci-nav-active,
+.ci-site .ci-nav button:hover{color:var(--ci-accent-blue)}
+.ci-site .ci-nav button::after{background:#d2a65e;height:3px}
+.ci-site .ci-nav-cta,
+.ci-property-page .ci-property-topnav .ci-property-nav-cta{background:var(--ci-accent-blue)!important}
+.ci-site .ci-nav-cta:hover,
+.ci-property-page .ci-property-topnav .ci-property-nav-cta:hover{background:#174989!important}
+.ci-site .ci-hero::before{background:
+ radial-gradient(circle at 28% 15%,#2c67ad6e,transparent 46%),
+ linear-gradient(128deg,#0c2344 0%,#163e79 68%,#12355f 100%)!important}
+.ci-site .ci-hero-overline{color:#ebcd9b}
+.ci-site .ci-hero-overline-rule{height:3px;background:#e6b568}
+.ci-site .ci-hero h1 em{color:#f0d5a1}
+.ci-site .ci-hero-primary{
+ background:#fffaf0!important;color:#184575!important;
+ border:2px solid #e9c37d!important
+}
+.ci-site .ci-hero-primary:hover{background:#f4e6cb!important}
+.ci-site .ci-hero-text-link{border-color:#dfbd7a}
+.ci-site .ci-hero-facts svg{color:#edc47c}
+.ci-site .ci-hero-visual{border-color:#fff5e724;box-shadow:0 30px 60px #071a3f89}
+.ci-site .ci-hero-image-caption-index{color:#f5d49b}
+.ci-site .ci-hero-seal{background:#f5e7ca;color:#174c92;outline:2px solid #cc9e56;box-shadow:0 10px 30px #051d4099}
+.ci-site .ci-hero-seal strong{color:#19569f}
+.ci-site .ci-hero-photo-controls{
+ position:absolute;right:17px;bottom:19px;z-index:5;
+ display:flex;align-items:center;gap:10px;padding:6px 7px;
+ border:1px solid #ffffff57;background:#0c2d4bc9;
+ color:#fff;border-radius:6px;backdrop-filter:blur(7px)
+}
+.ci-site .ci-hero-photo-controls button{
+ background:#fdf7ea;border:0;border-radius:4px;color:#164d8f;
+ width:34px;height:34px;display:grid;place-items:center;
+ font:400 27px/1 Georgia,serif;padding:0;cursor:pointer
+}
+.ci-site .ci-hero-photo-controls button:hover{background:#e8c68d;color:#123b67}
+.ci-site .ci-hero-photo-controls>span{min-width:36px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em}
+.ci-site .ci-booking-topline{background:linear-gradient(90deg,#1553a8,#2876cd);color:#fff;border-radius:7px 7px 0 0}
+.ci-site .ci-booking-topline span:first-child svg{color:#ffdc9c}
+.ci-site .ci-booking-topline span:last-child{color:#e4edf9}
+.ci-site .ci-booking-widget{border:1px solid #d5d9d9;border-top:0;background:linear-gradient(180deg,#fff,#fffcf7)}
+.ci-site .ci-booking-widget .ci-icon-tile{background:#e8f1fc;color:#2061b2;border-color:#d8e4f5}
+.ci-site .ci-booking-widget label{border-color:#d6dfe9;background:#fff}
+.ci-site .ci-booking-widget label:focus-within{border-color:#2873d0;box-shadow:0 0 0 3px #3884d028}
+.ci-site .ci-booking-widget .ci-btn-blue{background:linear-gradient(125deg,#1a53aa,#2e76c8)!important;color:#fff}
+.ci-site .ci-booking-widget .ci-btn-blue:hover{background:#124890!important}
+.ci-site .ci-hotels{background:linear-gradient(180deg,#fffaf2,#f7efe4);border-bottom-color:#e9dcca}
+.ci-site .ci-section-label{color:#745d3c}
+.ci-site .ci-section-label>span:first-child{color:#1d60b3}
+.ci-site .ci-section-rule{background:linear-gradient(90deg,#2d6bc1,#d0a86d,#e5dccf)}
+.ci-site .ci-eyebrow{color:#b17b31}
+.ci-site .ci-eyebrow:not(.ci-on-dark)::before{height:3px;background:#266ac2}
+.ci-site .ci-section-head h2,
+.ci-site .ci-hotels .ci-section-head h2,
+.ci-site .ci-rooms-section .ci-section-head h2{color:#153a6c}
+.ci-site .ci-hotel-card{border-color:#e5d9c8}
+.ci-site .ci-hotel-card:hover{border-color:#cea261;box-shadow:0 19px 46px #154a8c2b}
+.ci-site .ci-hotel-location{color:#986b2d}
+.ci-site .ci-hotel-card-actions a{background:#205eae;border-color:#205eae}
+.ci-site .ci-hotel-card-actions a:hover{background:#154a8a}
+.ci-site .ci-hotel-card-actions .ci-hotel-request{background:#fffaf1;color:#1f569b;border-color:#d3af79}
+.ci-site .ci-hotel-card-actions .ci-hotel-request:hover{background:#f4e8d3}
+.ci-site .ci-rooms-section{background:linear-gradient(180deg,#f5eadb,#fff9f0);border-top-color:#e5d2b7}
+.ci-site .ci-experience-section{background:#fffdf9}
+.ci-site .ci-amenity{background:linear-gradient(150deg,#fff,#fffaf3);border-color:#eadccc;border-bottom:3px solid #d9b582}
+.ci-site .ci-amenity:hover{border-color:#9ec2e7;border-bottom-color:#286ac2}
+.ci-site .ci-amenity-icon{background:#e9f2ff!important;border-color:#cadef3;color:#1d5fac!important}
+.ci-site .ci-amenity:nth-child(2n) .ci-amenity-icon{background:#fbf0da!important;border-color:#ead9b8;color:#8f642e!important}
+.ci-site .ci-feature-banner{background:linear-gradient(95deg,#e9f1fc,#f5e8d4);border:1px solid #d9c7aa;border-left:6px solid #2a6ab9}
+.ci-site .ci-feature-banner-icon{background:#1a5db0;color:#fff;border-color:#1a5db0}
+.ci-site .ci-feature-banner strong{color:#173e70}
+.ci-site .ci-feature-banner a{background:#2160b3;border-color:#2160b3}
+.ci-site .ci-feature-banner a:hover{background:#154986}
+.ci-site .ci-rewards-section{background:#fff9ef}
+.ci-site .ci-rewards-feature,.ci-site .ci-rewards-section .ci-rewards-feature{
+ background:radial-gradient(circle at 95% 0%,#2a6bb4a6,transparent 52%),linear-gradient(115deg,#0f2b51,#205596);
+ border:1px solid #d5ae6e
+}
+.ci-site .ci-contact-section{background:linear-gradient(120deg,#0b284c,#164577)}
+.ci-site .ci-contact-section .ci-bottom-grid article{background:#ffffff0e;border-color:#d6b77e55}
+.ci-site .ci-contact-section .ci-bottom-symbol{background:#2469ba!important;color:#f7e4bd!important}
+.ci-site .ci-footer{background:#081d38;border-top:3px solid #cfaa6d}
+.ci-site .ci-inner{background:#fffaf2}
+.ci-property-page .ci-property-intro{background:linear-gradient(#fffdf8 75%,#ede6da 75%)}
+.ci-property-page .ci-property-quickbar button.is-active{border-color:#286bc3;color:#18559e;box-shadow:inset 0 4px 0 #cbaa75}
+.ci-property-page .ci-property-tab-frame{border-color:#a4bbd4}
+.ci-property-page .ci-property-rooms-section,.ci-property-page .ci-property-location-section{background:#f6eee3}
+.ci-property-page .ci-property-bottom-cta{background:linear-gradient(105deg,#102d52,#195799)}
+@media(max-width:620px){
+ .ci-site .ci-hero-photo-controls{right:9px;bottom:10px;gap:6px}
+ .ci-site .ci-hero-photo-controls button{width:30px;height:30px}
+ .ci-site .ci-hero-image-caption{max-width:62%}
+}
