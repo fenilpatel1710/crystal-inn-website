@@ -1,4 +1,5 @@
 import './globals.css';
+import {HotelCurtainProvider} from '../components/HotelCurtainTransition';
 import type {Metadata} from 'next';
 
 const brandName='Crystal Inn Hotels & Stays';
@@ -32,6 +33,6 @@ export default function RootLayout({children}:{children:React.ReactNode}){
   <head>
    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(websiteStructuredData)}}/>
   </head>
-  <body>{children}</body>
+  <body><HotelCurtainProvider>{children}</HotelCurtainProvider></body>
  </html>;
 }

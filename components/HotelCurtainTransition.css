@@ -1,0 +1,64 @@
+/*
+ Crystal Inn property transition: two navy silk panels with fine champagne-gold edging.
+ Visual only; never captures navigation without the matching HotelCurtainLink.
+*/
+.ci-curtain{
+ position:fixed;inset:0;z-index:10000;
+ overflow:hidden;pointer-events:none;visibility:hidden;
+}
+.ci-curtain:not(.ci-curtain-idle){visibility:visible;pointer-events:auto}
+.ci-curtain-panel{
+ position:absolute;top:0;bottom:0;width:50.1%;
+ background:
+  radial-gradient(ellipse at 34% 32%,rgba(93,123,158,.28) 0%,transparent 47%),
+  linear-gradient(115deg,#071a30 0%,#122f50 20%,#091c34 51%,#1b3c5c 74%,#071829 100%);
+ will-change:transform;
+ box-shadow:inset 0 0 90px rgba(1,9,19,.4);
+}
+.ci-curtain-panel::before{
+ content:"";position:absolute;inset:0;opacity:.36;pointer-events:none;
+ background:linear-gradient(111deg,transparent 5%,rgba(207,229,250,.08) 20%,transparent 31%,rgba(202,225,246,.09) 59%,transparent 75%);
+}
+.ci-curtain-panel::after{
+ content:"";position:absolute;top:0;bottom:0;width:3px;
+ background:linear-gradient(90deg,#88623a,#eed4a2,#ae8147);
+ box-shadow:0 0 18px #e3bf7e6b;
+}
+.ci-curtain-left{left:0;transform:translate3d(-101%,0,0)}
+.ci-curtain-right{right:0;transform:translate3d(101%,0,0);background-position:right}
+.ci-curtain-left::after{right:0}
+.ci-curtain-right::after{left:0}
+.ci-curtain-closing .ci-curtain-panel{
+ transform:translate3d(0,0,0);
+ transition:transform 700ms cubic-bezier(.74,0,.28,1);
+}
+.ci-curtain-closed .ci-curtain-panel{transform:translate3d(0,0,0)}
+.ci-curtain-opening .ci-curtain-left{
+ transform:translate3d(-101%,0,0);
+ transition:transform 850ms cubic-bezier(.58,.02,.25,1);
+}
+.ci-curtain-opening .ci-curtain-right{
+ transform:translate3d(101%,0,0);
+ transition:transform 850ms cubic-bezier(.58,.02,.25,1);
+}
+.ci-curtain-wordmark{
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ display:flex;flex-direction:column;gap:7px;align-items:center;
+ color:#fffdf7;text-align:center;pointer-events:none;
+ opacity:0;transition:opacity .17s;
+ white-space:nowrap;text-shadow:0 2px 20px #0006;
+}
+.ci-curtain-wordmark>span{
+ font-family:Georgia,serif;font-weight:400;font-size:clamp(24px,3.8vw,45px);
+ letter-spacing:.11em;
+}
+.ci-curtain-wordmark small{font:700 10px/1.4 Arial,sans-serif;letter-spacing:.31em;color:#e4c790}
+.ci-curtain-closed .ci-curtain-wordmark{opacity:1}
+.ci-curtain-opening .ci-curtain-wordmark{opacity:0;transition:none}
+.ci-curtain-sr-only{
+ position:absolute;width:1px;height:1px;margin:-1px;
+ padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+@media(prefers-reduced-motion:reduce){
+ .ci-curtain,.ci-curtain-panel,.ci-curtain-wordmark{transition:none!important}
+}
