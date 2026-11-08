@@ -117,7 +117,7 @@ const navItems:[Page,string][]=[['home','Home'],['rooms','Our Hotels'],['rewards
       <div><p className="ci-eyebrow">SELECTED CRYSTAL INN STAYS</p><h2 id="featured-hotels-title">Featured Hotels</h2></div>
       <p>A closer look at properties we're highlighting. To search every location, use <a className="ci-featured-directory-link" href="#find-hotels">Find a Hotel</a> above.</p>
      </div>
-     {featured.length?<div className="ci-featured-grid">
+     {featured.length?<div className={featured.length===1?'ci-featured-grid ci-featured-single':'ci-featured-grid'}>
       {featured.map(h=><article className="ci-hotel-card ci-featured-hotel-card" key={h.id}>
        <div className="ci-hotel-card-image ci-featured-card-image">
         <HotelCurtainLink className="ci-hotel-photo-link" href={'/hotels/'+encodeURIComponent(h.slug)} aria-label={'Explore '+h.display_name}>
