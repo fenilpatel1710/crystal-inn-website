@@ -50,7 +50,7 @@ export default function Home(){
   let active=true;
   fetch('/api/public/homepage',{cache:'no-store'}).then(r=>r.json()).then(d=>{
    if(!active||!Array.isArray(d.photos))return;
-   const photos=d.photos.filter((p:unknown):p is {id:string;caption:string;url:string}=>{
+   const photos=(d.photos as unknown[]).filter((p:unknown):p is {id:string;caption:string;url:string}=>{
     if(!p||typeof p!=='object')return false;
     const item=p as Record<string,unknown>;
     return typeof item.id==='string'&&typeof item.caption==='string'&&typeof item.url==='string'&&
