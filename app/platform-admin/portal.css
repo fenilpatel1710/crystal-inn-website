@@ -72,3 +72,25 @@
 .ci-photo-library-item .ci-photo-library-delete:disabled{background:#f3f5f8;color:#87919c;border-color:#d9e0e8}
 
 .ci-photo-library-pending{display:grid;place-items:center;height:145px;background:#f3f4f6;color:#a13c47;font-weight:800;font-size:12px}
+
+
+/* Super Admin — main website homepage photo library. */
+.ci-console .ci-homepage-media-manager>p{max-width:900px}
+.ci-console .ci-homepage-upload{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:14px;padding:22px;background:#f7f4ee;border:1px solid #e4d9c8;margin:22px 0}
+.ci-console .ci-homepage-upload label{min-width:0;margin:0}
+.ci-console .ci-homepage-upload button{width:max-content;min-height:48px;background:#1c60af}
+.ci-console .ci-homepage-upload-preview{display:block;max-width:380px;width:100%;height:190px;object-fit:cover;border:4px solid #fff;box-shadow:0 4px 18px #132f4820}
+.ci-console .ci-homepage-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px}
+.ci-console .ci-homepage-photo-card{border:1px solid #dce4ee;border-radius:7px;overflow:hidden;background:#fff;min-width:0}
+.ci-console .ci-homepage-photo-card.is-active{border:2px solid #1f60b1;box-shadow:0 0 0 3px #1c67bc1d}
+.ci-console .ci-homepage-photo-card>img{display:block;width:100%;height:200px;object-fit:cover;background:#eaf0f5}
+.ci-console .ci-homepage-photo-info{padding:16px}
+.ci-console .ci-homepage-photo-info>span{display:inline-block;font-weight:800;color:#1a5ba5;background:#eaf2fd;padding:5px 9px;border-radius:3px}
+.ci-console .ci-homepage-photo-info label{margin:11px 0}
+.ci-console .ci-homepage-photo-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ci-console .ci-homepage-photo-actions button{padding:10px 12px;border:1px solid #aac4df;border-radius:4px;background:#eef4fd;color:#1a4f82;cursor:pointer;font-weight:700}
+.ci-console .ci-homepage-photo-actions button:hover{background:#d9eaff}
+.ci-console .ci-homepage-photo-actions .ci-danger-action{border-color:#ecd2cc;background:#fff4f0;color:#923e30}
+.ci-console .ci-homepage-photo-actions .ci-danger-action:hover{background:#ffe8e2}
+@media(max-width:960px){.ci-console .ci-homepage-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.ci-console .ci-homepage-upload,.ci-console .ci-homepage-photo-grid{grid-template-columns:1fr}.ci-console .ci-homepage-upload-preview{width:100%}.ci-console .ci-homepage-photo-card>img{height:225px}}
