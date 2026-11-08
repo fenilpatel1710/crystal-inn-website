@@ -14,7 +14,7 @@ export function HotelCurtainProvider({children}:{children:ReactNode}){
  const [phase,setPhase]=useState<Phase>('idle');
  const pending=useRef<string|null>(null);
  const locked=useRef(false);
- const timers=useRef<ReturnType<typeof setTimeout>[]>([]);
+ const timers=useRef<number[]>([]);
  const clearTimers=useCallback(()=>{
   for(const timer of timers.current)window.clearTimeout(timer);
   timers.current=[];
